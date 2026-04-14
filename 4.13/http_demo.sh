@@ -1,206 +1,148 @@
 #!/usr/bin/env bash
-# ─────────────────────────────────────────────────────────────────────────────
-# Lab 4.13 — Speaking HTTP by Hand
+# http_demo.sh — Speaking HTTP by Hand
+#
+# Shows that HTTP/1.1 is plain, human-readable text. You can compose a valid
+# HTTP request yourself and send it directly using nc (netcat) as a raw TCP pipe.
+#
 # Run: bash http_demo.sh
 #
-# What this script does: makes real HTTP requests against httpbin.org and
-# example.com, printing the raw headers and annotating what each part means.
-# Section E shows the same thing with nc — no library, just text over TCP.
-# ─────────────────────────────────────────────────────────────────────────────
-
-set -euo pipefail
-
-echo ""
-echo "═══════════════════════════════════════════════════════════════════════"
-echo "SECTION A — Basic GET: reading the raw HTTP conversation"
-echo "═══════════════════════════════════════════════════════════════════════"
-echo ""
-echo "curl -v shows you exactly what's happening on the wire:"
-echo "  Lines starting with *  =  curl metadata (DNS, TCP connection, TLS)"
-echo "  Lines starting with >  =  headers WE sent to the server"
-echo "  Lines starting with <  =  headers the SERVER sent back"
-echo ""
-echo "─── Request to example.com ───────────────────────────────────────────"
-
-# -v shows all headers; -s suppresses the progress bar; 2>&1 merges
-# stderr (where -v output goes) into stdout so we see everything together
-curl -v -s http://example.com/ 2>&1
-
-echo ""
-echo "─── Same request, but print only the status code ─────────────────────"
-
-# -o /dev/null throws away the body; -w prints what we ask for after
-curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://example.com/
-
-echo ""
-echo "Notice the > blank line after the headers — that blank line is the"
-echo "CRLF separator. The server won't process the request until it sees it."
+# Requirements:
+#   curl  — macOS: built-in  |  Linux/WSL: sudo apt install curl
+#   nc    — macOS: built-in  |  Linux/WSL: sudo apt install netcat
 
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════════════"
-echo "SECTION B — Response Codes: 200, 301, 404"
-echo "═══════════════════════════════════════════════════════════════════════"
+echo "═══════════════════════════════════════════════════════════════════"
+echo "SECTION A — HTTP Is Just Text"
+echo "═══════════════════════════════════════════════════════════════════"
 echo ""
-echo "─── 200 OK ───────────────────────────────────────────────────────────"
-
-curl -s -o /dev/null -w "Status: %{http_code}  →  %{url_effective}\n" \
-  http://httpbin.org/get
-
+echo "An HTTP/1.1 GET request is plain, human-readable text."
+echo "Every request has exactly three parts:"
 echo ""
-echo "─── 301 Redirect — WITHOUT -L (curl stops at the redirect) ──────────"
-
-# grep filters to just the * > < lines so output fits on screen
-curl -v -s -o /dev/null http://httpbin.org/status/301 2>&1 \
-  | grep -E "^[*<>]"
-
+echo "  GET /path HTTP/1.1           request line  (method, path, version)"
+echo "  Host: example.com            headers       (one per line, colon-separated)"
+echo "  Connection: close"
+echo "                               blank line    (signals: headers are done)"
 echo ""
-echo "  ↑ See the 'location:' header? That's where the server is sending you."
-echo "  Without -L, curl shows you the 301 and stops. With -L it follows."
-
+echo "The blank line is required by the HTTP spec (RFC 9112)."
+echo "Without it, the server keeps waiting for more headers — the connection hangs."
 echo ""
-echo "─── 301 Redirect — WITH -L (curl follows it automatically) ──────────"
-
-curl -s -o /dev/null \
-  -w "Final status: %{http_code}  →  final URL: %{url_effective}\n" \
-  -L http://httpbin.org/status/301
-
-echo ""
-echo "─── 404 Not Found ────────────────────────────────────────────────────"
-
-curl -s -o /dev/null -w "Status: %{http_code}\n" http://httpbin.org/status/404
-
-
-echo ""
-echo "═══════════════════════════════════════════════════════════════════════"
-echo "SECTION C — POST: sending data to the server"
-echo "═══════════════════════════════════════════════════════════════════════"
-echo ""
-echo "─── POST with a JSON body ────────────────────────────────────────────"
-echo ""
-echo "Watch the > section: you'll see Content-Type and Content-Length headers"
-echo "that GET requests don't have. That's how the server knows what we sent."
+echo "Sending that exact request to info.cern.ch port 80 via nc ..."
+echo "(info.cern.ch is the original WWW server at CERN where the web was invented)"
+echo "(nc is a raw TCP pipe — no HTTP library, no magic, just text over a socket)"
 echo ""
 
-# -X POST sets the method; -H adds a header; -d sets the body
-# httpbin.org /post echoes back what it received as JSON — great for learning
-curl -v -s \
-  -X POST http://httpbin.org/post \
+# Send a raw HTTP/1.1 GET request to info.cern.ch port 80
+# printf sends true CRLF (\r\n) after each header — required by the HTTP spec
+# Connection: close prevents nc hanging on HTTP/1.1 keep-alive
+# -w 5: exit after 5 seconds of inactivity (safety timeout)
+printf 'GET / HTTP/1.1\r\nHost: info.cern.ch\r\nConnection: close\r\n\r\n' \
+  | nc -w 5 info.cern.ch 80
+
+echo ""
+echo "─── What you just saw ───────────────────────────────────────────"
+echo "Line 1:   status line  — HTTP version + three-digit code + reason phrase"
+echo "Lines 2+: response headers — Server, Content-Length, Content-Type ..."
+echo "Blank:    end of headers"
+echo "Rest:     body — the actual HTML page"
+echo ""
+
+
+echo ""
+echo "═══════════════════════════════════════════════════════════════════"
+echo "SECTION B — Annotated HTTP: curl -v"
+echo "═══════════════════════════════════════════════════════════════════"
+echo ""
+echo "curl -v annotates the conversation line by line:"
+echo ""
+echo "  *  connection events  (DNS lookup, TCP handshake)"
+echo "  >  text YOUR computer sent  (the HTTP request)"
+echo "  <  text the SERVER sent back (the HTTP response headers)"
+echo ""
+echo "Running: curl -v http://info.cern.ch ..."
+echo ""
+
+# -v: verbose (annotated output)  -s: no progress bar
+# -o /dev/null: discard body      2>&1: curl writes -v to stderr; merge here
+curl -v -s -o /dev/null http://info.cern.ch 2>&1
+
+echo ""
+echo "The > block above IS the HTTP request — the same text nc sent in Section A."
+echo "The < block IS the HTTP response headers — the same text nc received."
+echo ""
+
+
+echo ""
+echo "═══════════════════════════════════════════════════════════════════"
+echo "SECTION C — POST: Sending Data to the Server"
+echo "═══════════════════════════════════════════════════════════════════"
+echo ""
+echo "GET fetches data. POST sends it."
+echo "The data travels in the body — the bytes after the blank line."
+echo ""
+echo "httpbin.org/post echoes the full request back as JSON."
+echo "Look at the 'headers' field — it shows what curl sent."
+echo ""
+echo "--- JSON POST ---"
+echo "(must set Content-Type manually — curl does not default to JSON)"
+echo ""
+
+# -H sets a custom header
+# -d sets the request body (implies POST — no -X POST needed)
+curl -s https://httpbin.org/post \
   -H "Content-Type: application/json" \
-  -d '{"name":"Alice","course":"Anyone Can Code"}' \
-  2>&1
+  -d '{"name": "alice", "age": 30}'
 
 echo ""
-echo "─── POST with form data (URL-encoded, like an HTML form submit) ──────"
+echo ""
+echo "--- Form data POST (what HTML forms submit) ---"
+echo "(no -H needed: curl defaults to application/x-www-form-urlencoded)"
 echo ""
 
-# Without -H, -d defaults to Content-Type: application/x-www-form-urlencoded
-# Note how the Content-Type changes compared to the JSON POST above
-curl -s \
-  -X POST http://httpbin.org/post \
-  -d "username=alice&message=Hello+World" \
-  | python3 -c "import sys,json; d=json.load(sys.stdin); print('Content-Type sent:', d['headers']['Content-Type']); print('Form data received:', json.dumps(d['form'], indent=2))"
-
+curl -s https://httpbin.org/post \
+  -d "username=alice&city=boston"
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════════════"
-echo "SECTION D — Cookies: how servers remember you"
-echo "═══════════════════════════════════════════════════════════════════════"
-echo ""
-echo "─── Step 1: Server sends a Set-Cookie header ─────────────────────────"
-echo ""
-echo "httpbin.org /cookies/set?name=value returns a 302 redirect with"
-echo "a Set-Cookie header. Let's see the headers before following it."
-echo ""
-
-# Without -L, we see the 302 response and the Set-Cookie header it carries
-curl -v -s -o /dev/null http://httpbin.org/cookies/set?flavor=chocolate 2>&1 \
-  | grep -E "^[<>]"
-
-echo ""
-echo "─── Step 2: Save that cookie to a file, follow the redirect ──────────"
-echo ""
-
-# -c saves all Set-Cookie headers to a file in Netscape cookie format
-# -L follows the 302 redirect to /cookies
-curl -s -c /tmp/lab413_cookies.txt \
-  "http://httpbin.org/cookies/set?flavor=chocolate" \
-  -L -o /dev/null
-
-echo "Cookie file contents:"
-cat /tmp/lab413_cookies.txt
-
-echo ""
-echo "─── Step 3: Send the cookie back on the next request ─────────────────"
-echo ""
-echo "Watch the > section: curl adds 'Cookie: flavor=chocolate' automatically"
-echo "because it's in the cookie file for this domain."
-echo ""
-
-# -b reads cookies from the file and sends them as Cookie: headers
-curl -v -s -b /tmp/lab413_cookies.txt "http://httpbin.org/cookies" 2>&1
-
-echo ""
-echo "─── Inline cookie (no file needed) ───────────────────────────────────"
-echo ""
-
-curl -v -s -b "flavor=chocolate" "http://httpbin.org/cookies" 2>&1 \
-  | grep -E "^[<>]|cookies"
-
-# Cleanup
-rm -f /tmp/lab413_cookies.txt
 
 
 echo ""
-echo "═══════════════════════════════════════════════════════════════════════"
-echo "SECTION E — Raw HTTP with nc: no library, just text over TCP"
-echo "═══════════════════════════════════════════════════════════════════════"
+echo "═══════════════════════════════════════════════════════════════════"
+echo "SECTION D — Status Codes: The Server's Verdict"
+echo "═══════════════════════════════════════════════════════════════════"
 echo ""
-echo "curl does the same thing you're about to do, but automates it."
-echo "nc opens a raw TCP connection. We type the request by hand."
+echo "Every HTTP response begins with a three-digit status code."
+echo "The first digit is the category:"
 echo ""
-echo "─── Scripted version (same as typing it manually) ────────────────────"
+echo "  2xx = success            3xx = redirect (go somewhere else)"
+echo "  4xx = client error       5xx = server error"
 echo ""
-echo "Sending this request over a raw TCP socket to example.com:80:"
-echo ""
-echo "  GET / HTTP/1.0"
-echo "  Host: example.com"
-echo "  [blank line]"
+echo "httpbin.org/status/N returns exactly status code N. Trying several:"
 echo ""
 
-# printf sends the exact bytes we want (including \r\n CRLF endings)
-# HTTP requires \r\n, not just \n — printf handles this explicitly
-# sleep 3 keeps stdin open long enough for the server to send its response
-# (macOS BSD nc closes the socket very fast when stdin hits EOF)
-(printf "GET / HTTP/1.0\r\nHost: example.com\r\n\r\n"; sleep 3) | nc example.com 80
+# -o /dev/null: discard body
+# -w "%{http_code}": print just the status code after the transfer
+for code in 200 201 301 400 404 500; do
+  received=$(curl -s -o /dev/null -w "%{http_code}" "https://httpbin.org/status/${code}")
+  echo "  Requested ${code}  →  received ${received}"
+done
 
 echo ""
-echo "─── Why HTTP/1.0 and not HTTP/1.1? ───────────────────────────────────"
+echo "--- curl exit code vs HTTP status ---"
 echo ""
-echo "HTTP/1.1 keeps the connection open after the response (keep-alive)."
-echo "The server sends the response, then waits for more requests."
-echo "nc would just sit there. HTTP/1.0 tells the server: close when done."
+echo "curl exits 0 even when the server returns 404 or 500."
+echo "The exit code means: did the network transfer complete?"
+echo "It does NOT mean: did the server accept the request?"
 echo ""
-echo "─── Interactive exercise instructions ────────────────────────────────"
+
+# curl -s: silent  -o /dev/null: discard body
+curl -s -o /dev/null "https://httpbin.org/status/404"
+echo "curl exit code after a 404 response: $?"
+
 echo ""
-echo "  macOS:  nc -c example.com 80"
-echo "  Linux:  nc example.com 80"
+echo "Add --fail to exit non-zero on 4xx/5xx:"
 echo ""
-echo "  Then type each line and press Enter:"
-echo "    GET / HTTP/1.0"
-echo "    Host: example.com"
-echo "    [press Enter one more time — this is the blank line]"
+
+curl -s --fail "https://httpbin.org/status/404" -o /dev/null 2>/dev/null
+FAIL_EXIT=$?
+echo "curl exit code with --fail on 404: ${FAIL_EXIT}  (non-zero = server returned error)"
 echo ""
-echo "  The -c flag on macOS converts your Enter (LF) to CRLF."
-echo "  HTTP requires CRLF. Most servers are lenient, but nc -c is correct."
-echo ""
-echo "─── Bonus: nc against a local Python server ──────────────────────────"
-echo ""
-echo "  Terminal 1:  python3 -m http.server 8080"
-echo "  Terminal 2:  nc -c 127.0.0.1 8080"
-echo "               GET / HTTP/1.0"
-echo "               Host: 127.0.0.1"
-echo "               [blank line]"
-echo ""
-echo "  Terminal 1 will print the log line when your request arrives."
-echo "  You can see both sides of the HTTP conversation at once."
