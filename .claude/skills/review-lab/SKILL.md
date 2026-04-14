@@ -104,9 +104,11 @@ Check:
 - [ ] Every `## Part N` in the lab has a corresponding `## PART N` section in the script
 - [ ] Every `### What is X?` section in the lab has corresponding **SPEAK** + **EXPLAIN** beats in the script covering the same concept
 - [ ] Every `### Run the demo` in the lab (with a `python3.12 <file>` command) has a corresponding **TYPE** + **OUTPUT** + **EXPLAIN** beat sequence in the script
-- [ ] For labs with lesson code (Python/TypeScript files students need to understand): a `{LAB_PREFIX}-code-walkthrough.md` script file exists alongside `{LAB_PREFIX}-script.md`
-- [ ] The lab references the code walkthrough (e.g., "read through `hash_demo.py` before running — the code walkthrough video covers each function in detail") rather than including inline code explanations
-- [ ] **Exempt:** infrastructure files run as a black box (provided servers, Docker images, reused prior-lab code), shell-only labs where CLI flags are explained per-command
+- [ ] For labs with lesson code (Python, TypeScript, OR bash demo scripts students need to understand): a `{LAB_PREFIX}-code-walkthrough.md` exists as a separate file
+- [ ] The code walkthrough uses `code [filename]` (VS Code) — NOT `cat`, `less`, or any terminal file display
+- [ ] The code walkthrough has a **conceptual section BEFORE the code** that explains the *why* from first principles — every term used in the code is defined conceptually before the code section that uses it (e.g., "what is a salt?" explained before the gensalt() line appears)
+- [ ] The lab references the walkthrough with a short note only — no inline code explanations
+- [ ] **Exempt:** infrastructure run as a black box (provided servers, Docker images), reused prior-lab code
 - [ ] Every exercise in the lab (under `### Exercise`) has a corresponding **TYPE** beat in the script showing the solution code, followed by **OUTPUT** showing the result
 - [ ] No script section covers something not present in the lab
 - [ ] No lab section is missing from the script
@@ -151,16 +153,28 @@ Read `{LAB_PREFIX}-lab.md`.
 - [ ] Has `## Further Reading` with at least 3 links
 
 **Code walkthrough check:**
-For each demo file in the lab, determine: is this file the *lesson* (code students need to understand), or *infrastructure* (a server/image they just run as a black box)?
+For each demo file in the lab, determine: is this file the *lesson* (code students need to understand), or *infrastructure* (run as a black box)?
 
-For lesson code:
-- [ ] A separate `{LAB_PREFIX}-code-walkthrough.md` file exists — a standalone instructor script that reads through the lesson code file(s) line by line, with SPEAK/TYPE/EXPLAIN beats
-- [ ] The student lab has a short note directing students to read the file or watch the code walkthrough video (NOT inline code blocks)
-- [ ] The code walkthrough script covers every key function/section of the lesson code file(s) with EXPLAIN beats that connect design choices to concepts
+For lesson code (Python, TypeScript, OR bash scripts that ARE the lesson):
+- [ ] `{LAB_PREFIX}-code-walkthrough.md` exists as a separate file
+- [ ] Walkthrough opens files with `code [filename]` — NOT `cat`/`less`/terminal display
+- [ ] Walkthrough has conceptual sections BEFORE the code — every term the code uses is defined from first principles before the code section that uses it
+- [ ] Student lab has only a short reference note (NOT inline code walkthroughs)
 
-Exempt from walkthrough:
-- Infrastructure students run as a black box (provided auth server, Docker images, reused prior-lab code)
-- Shell-only labs where CLI flags are already explained per-command
+Exempt:
+- Infrastructure run as a black box (provided server, Docker image, startup script)
+- Code reused unchanged from a prior lab
+
+**Platform split check:**
+- [ ] Every CLI tool install command shows BOTH macOS (brew) and Linux/WSL (apt) side by side
+- [ ] Python (uv), npm, and Docker commands do NOT need platform splits (same on both)
+
+**Interactivity check:**
+- [ ] Every Part has at least TWO interactive elements beyond "run this and read output":
+  - Prediction prompts (predict before running, collapsible answer)
+  - Fill-in-the-blank commands or code with `_____` (collapsible solution)
+  - Short-answer conceptual questions (collapsible answer)
+  - "Try it" variations asking students to modify an example
 
 **First-principles check (spot-check first 5 technical terms):**
 For the first 5 technical terms introduced (e.g., "hash function", "salt", "JWT", "bearer token", "authorization code"):

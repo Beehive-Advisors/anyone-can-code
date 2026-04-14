@@ -208,11 +208,19 @@ cd $0 && npm init -y && npm install [packages]
 ```
 For Next.js apps: `npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"` then `npx shadcn@latest init`.
 
-**If shell-only:** No setup needed — confirm required CLI tools are available:
+**If shell-only:** Confirm required CLI tools are available, then note install commands for BOTH platforms in the lab:
 ```bash
 which curl nc openssl [whatever tools the lab uses]
 ```
-If a tool is missing on macOS, note the `brew install` command in the lab setup section.
+In the lab Setup section, always show both:
+```
+**macOS:**
+brew install [tool]
+
+**Linux / WSL:**
+sudo apt install [tool]
+```
+Never show only one platform. Python (uv) and npm are cross-platform — no split needed for those.
 
 **If Docker/Kubernetes:**
 ```bash
@@ -431,14 +439,35 @@ python3.12 [filename].py
 Do NOT include inline code walkthroughs in the student lab. Instead, add a short
 note directing the student to read the code or refer to the code walkthrough video:
 
-> "Before running this section, read through `[filename].py`. The code walkthrough
-> video covers each function in detail — follow it before running the demo."
+> "Before running this section, open `[filename]` in VS Code and read through it.
+> The code walkthrough video covers each section in detail."
 
-**Exempt — skip even this note when:**
-- The file is infrastructure students just run as a black box (provided demo server,
-  Docker image, pre-existing app)
-- Shell-only labs where CLI flags are already explained per-command
-- Code reused from a prior lab without modification
+This applies to Python, TypeScript, AND bash demo scripts that ARE the lesson.
+**Exempt only when** the file is infrastructure run as a black box (provided server,
+Docker image, startup script), or code reused unchanged from a prior lab.
+
+### Interactivity requirement (non-negotiable):
+
+Every Part must include at least TWO interactive elements beyond just "run this command":
+
+- **Prediction prompt** — before showing output, ask the student to predict something:
+  > "Before running, predict: what status code will this return? Write it down."
+  Follow with a `<details><summary>Answer</summary>` collapsible.
+
+- **Fill-in-the-blank** — show a command or code snippet with `_____` where the student
+  must supply a flag, value, or keyword. Collapsible solution reveals the answer:
+  ```bash
+  curl -s _____ /dev/null -w "Status: %{http_code}\n" http://example.com/
+  ```
+  > What flag goes in the blank? `<details><summary>Answer</summary>-o</details>`
+
+- **Short-answer question** — ask a conceptual question they must answer before revealing:
+  > "What does the blank line between headers and body signal to the server?"
+  `<details><summary>Answer</summary>The server stops reading headers and waits for the body.</details>`
+
+- **"Try it" variation** — after a working example, ask them to modify it for a slightly different goal before giving the solution.
+
+Goal: students must actively engage at each step, not passively read and run.
 
 ### Exercise
 
@@ -491,18 +520,23 @@ a command, not just read. Must build directly on what was just demonstrated.]
 
 ## PHASE 7: Write Instructor Script(s)
 
-### When lesson code exists (Python, TypeScript demo files students need to understand):
+### When lesson code exists (Python, TypeScript, OR bash demo scripts students need to understand):
 
 Write TWO script files:
 
 **File 1: `$0/[LAB_ID]-code-walkthrough.md`**
-This is a separate instructor script recorded as its own video segment — before the lab video. Its sole purpose is to walk through the lesson code file(s) line by line so students understand what they're about to run.
+This is a separate instructor script recorded as its own video segment — before the lab video.
+It serves TWO purposes:
+1. **Conceptual foundation** — explain the *why* before showing the code. This is where the deep "why does bcrypt need to be slow?", "why is the JWT payload not encrypted?", "why does HTTP need the blank line?" explanations live. The regular lab script focuses on output; the walkthrough is where concepts are taught.
+2. **Code reading** — walk through the lesson code file(s) section by section so students understand what they're about to run.
+
+Opening files: use `code [filename]` to open in VS Code. Do NOT use `cat` or `less`. The instructor narrates from the open editor view.
 
 Structure:
 ```
 # Code Walkthrough Script — Lab $0: [TOPIC_TITLE]
 
-**Format:** Screencast — editor or terminal (cat/less)
+**Format:** Screencast — VS Code editor
 **Estimated recording time:** ~N min
 
 ---
@@ -510,23 +544,33 @@ Structure:
 ## INTRO
 
 **SPEAK**
-> "Before we run the lab, let's read the code. Understanding how it's written
-> means you can write your own version. Open [filename].py and follow along."
+> "Before we run the lab, I want to cover two things: the concept behind what
+> we're about to do, and then the code that implements it. Understanding both
+> means you can reason about what's happening — not just run commands."
 
 ---
 
-## [filename].py — Section A: [description]
+## Concept: [The core idea]
+
+**SPEAK**
+> "[Conceptual explanation — the problem this solves, the mental model students
+> need. No code yet. 2-4 minutes of pure concept. This is the deepest explanation
+> of the concept in the whole course — the lab script will reference it but not
+> re-explain it.]"
+
+---
+
+## [filename] — Section A: [description]
 
 **TYPE**
 ```bash
-cat [filename].py
+code [filename]
 ```
-(or open in editor — show the relevant section)
+(opens the file in VS Code — instructor narrates from the editor)
 
 **EXPLAIN**
 > "[Line-by-line narration. What does this function do? Why bytes not strings?
-> Why this constant? What does this return? Connect design choices to the
-> concepts from the lecture.]"
+> Why this constant? Connect code decisions back to the concept just explained.]"
 
 [Repeat for each section / key function in the file]
 
@@ -537,6 +581,7 @@ cat [filename].py
 ## Recording notes
 
 - [Tips for pacing, scrolling, font size]
+- [Remind: conceptual section first, code second]
 ```
 
 **File 2: `$0/[LAB_ID]-script.md`**
