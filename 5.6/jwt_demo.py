@@ -6,13 +6,9 @@ Run: python3.12 jwt_demo.py
 import jwt
 import json
 import base64
-import warnings
 from datetime import datetime, timedelta, timezone
 
-# Suppress key-length warnings for the demo (key is 32+ bytes below)
-warnings.filterwarnings("ignore")
-
-SECRET = "this-is-exactly-32-bytes-long!!"   # 32 bytes → satisfies RFC 7518
+SECRET = "this-is-exactly-32-bytes-long!!!"  # 32 bytes — satisfies RFC 7518 §3.2
 
 
 # ─────────────────────────────────────────────────────────────────────────────
