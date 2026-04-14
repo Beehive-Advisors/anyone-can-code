@@ -1,39 +1,35 @@
 # Lab 5.6 — Auth Mechanics
 
-Hands-on Python and shell lab covering the three auth mechanisms you encounter in every web application: bcrypt password hashing, JWT creation and tamper detection, and the OAuth 2.0 authorization code flow traced against a local server.
+This lab covers the three mechanisms behind almost every production authentication system: bcrypt password hashing, JSON Web Tokens (JWT), and the OAuth 2.0 authorization code flow. Students run working Python demos and curl commands to see each protocol step by step.
 
 ## Prerequisites
 
-- Lab 4.13 (HTTP by hand) and Lab 5.5 (Auth concepts)
-- Python 3.12, curl, bash
+- Lab 4.13 (Speaking HTTP by Hand) — familiarity with HTTP request/response and curl
+- Section 5.5 (Authentication and Authorization) — conceptual distinction between authn and authz
+- Python 3.12 and `uv` installed
 
 ## Setup
 
 ```bash
-cd 5.6
+cd ~/src/courses/anyone-can-code/5.6
 uv venv .venv --python 3.12
 source .venv/bin/activate
-uv pip install bcrypt PyJWT
+uv pip install bcrypt PyJWT flask
 ```
 
 ## Files
 
 | File | Description | How to run |
 |------|-------------|------------|
-| `hash_demo.py` | bcrypt password hashing — salt, cost factor, verification | `python3.12 hash_demo.py` |
-| `jwt_demo.py` | JWT creation, manual base64url decode, tampering demo | `python3.12 jwt_demo.py` |
-| `oauth_server.py` | Local OAuth 2.0 authorization server (infrastructure — run as black box) | `python3.12 oauth_server.py` |
-| `oauth_flow.sh` | OAuth 2.0 authorization code flow client — all four steps via curl | `bash oauth_flow.sh` |
-| `5.6-code-walkthrough.md` | Instructor script for the code walkthrough video (hash_demo.py + jwt_demo.py) | Read before running the lab |
-| `5.6-lab.md` | Student lab — exercises, output blocks, solutions | Follow top to bottom |
-| `5.6-script.md` | Instructor recording script for the lab screencast | For instructors |
-| `5.6-report.md` | Research report: bcrypt, JWT, OAuth 2.0 — background and sources | Reference |
+| `hash_demo.py` | bcrypt demo: fast vs. slow hashing, hash anatomy, salts, cost factor timing | `python3.12 hash_demo.py` |
+| `jwt_demo.py` | JWT demo: manual construction, PyJWT encode/decode, payload visibility, tamper detection | `python3.12 jwt_demo.py` |
+| `oauth_server.py` | Flask server implementing all three OAuth roles (authorization server, token endpoint, resource server) | `python3.12 oauth_server.py` (leave running in Terminal 1) |
+| `oauth_flow.sh` | curl-based walkthrough of the full authorization code flow against the local server | `bash oauth_flow.sh` (in Terminal 2 while server is running) |
+| `5.6-lab.md` | Student lab — instructions, exercises, and conceptual questions | Read in any Markdown viewer |
+| `5.6-script.md` | Instructor screencast script — SPEAK/TYPE/OUTPUT/EXPLAIN beats for the lab recording | Reference only |
+| `5.6-code-walkthrough.md` | Instructor screencast script — VS Code walkthrough of `hash_demo.py`, `jwt_demo.py`, and `oauth_server.py` before the lab run | Reference only |
+| `5.6-report.md` | Research report — concept background, library details, design decisions, and sources | Reference only |
 
-## Time
+## Time estimate
 
-~50 minutes
-
-## Notes
-
-- **Two terminals required for Part 3 (OAuth):** Terminal 1 runs `oauth_server.py`; Terminal 2 runs `oauth_flow.sh`. Start both before you reach Part 3.
-- **Watch the code walkthrough video before running Parts 1 and 2.** The walkthrough (`5.6-code-walkthrough.md`) covers every function in `hash_demo.py` and `jwt_demo.py` in detail. Run the demos after watching — the output will make sense immediately.
+~60 minutes (students); ~35–45 minutes screencast recording + ~18 minutes code walkthrough recording

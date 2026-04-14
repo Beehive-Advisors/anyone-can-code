@@ -1,103 +1,137 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.12
 """
-Lab 5.6 – Part 1: Password Hashing with bcrypt
-Run: python3.12 hash_demo.py
+hash_demo.py — bcrypt password hashing demo
+
+What this shows:
+  - Why fast hashing (SHA-256) is dangerous for passwords
+  - What's inside a bcrypt hash string
+  - Why every hash of the same password looks different
+  - How the cost factor controls timing
+
+Run with:
+    source .venv/bin/activate
+    python3.12 hash_demo.py
 """
+
 import bcrypt
+import hashlib
 import time
 
+print()
+print("=" * 70)
+print("SECTION A — The problem: fast hashing vs. slow hashing")
+print("=" * 70)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Section A: Basic hash + verify
-# ─────────────────────────────────────────────────────────────────────────────
+password = b"hunter2"
 
-print("=" * 60)
-print("SECTION A — Hashing a password")
-print("=" * 60)
+# Time SHA-256 for 100,000 hashes
+start = time.perf_counter()
+for _ in range(100_000):
+    hashlib.sha256(password).hexdigest()
+sha256_elapsed = time.perf_counter() - start
+
+print()
+print(f"  SHA-256 × 100,000 hashes: {sha256_elapsed:.3f} seconds")
+print(f"  SHA-256 per hash:         {sha256_elapsed / 100_000 * 1_000_000:.1f} microseconds")
+print(f"  SHA-256 hashes/second:    {100_000 / sha256_elapsed:,.0f}")
+print()
+
+# Time one bcrypt hash at cost 12
+start = time.perf_counter()
+hashed = bcrypt.hashpw(password, bcrypt.gensalt(rounds=12))
+bcrypt_elapsed = time.perf_counter() - start
+
+print(f"  bcrypt × 1 hash (cost 12): {bcrypt_elapsed:.3f} seconds")
+print(f"  bcrypt per hash:            {bcrypt_elapsed * 1000:.1f} milliseconds")
+print(f"  bcrypt hashes/second:       {1 / bcrypt_elapsed:,.0f}")
+print()
+
+speedup = bcrypt_elapsed / (sha256_elapsed / 100_000)
+print(f"  Speed ratio: SHA-256 is {speedup:,.0f}x faster than bcrypt")
+print()
+print("  An attacker who steals a SHA-256 password database can try")
+print("  billions of guesses per second with a GPU.")
+print("  With bcrypt cost 12, that same hardware gets a few thousand guesses/sec.")
+
+
+print()
+print("=" * 70)
+print("SECTION B — Anatomy: what's inside a bcrypt hash string")
+print("=" * 70)
 
 password = b"correct-horse-battery-staple"
+salt = bcrypt.gensalt(rounds=12)
+hashed = bcrypt.hashpw(password, salt)
 
-# gensalt() picks a random 22-character salt and embeds it in the hash
-hashed = bcrypt.hashpw(password, bcrypt.gensalt(rounds=12))
-
-print(f"Plaintext : {password.decode()}")
-print(f"Hash      : {hashed.decode()}")
+print()
+print(f"  Password:  {password}")
+print(f"  Full hash: {hashed}")
 print()
 
-# Anatomy of the hash string
-parts = hashed.decode().split("$")
-# parts[0] == ''  parts[1] == '2b'  parts[2] == '12'  parts[3] == salt+hash
-print("Hash anatomy:")
-print(f"  $2b  → algorithm identifier (bcrypt v2b)")
-print(f"  ${parts[2]}  → cost factor (2^{parts[2]} = {2**int(parts[2]):,} iterations)")
-print(f"  {parts[3][:22]}  → 22-char random salt (embedded in hash string)")
-print(f"  {parts[3][22:]}  → 31-char actual hash output")
+h = hashed.decode("utf-8")
+print("  Decoded fields:")
+print(f"    Version:     {h[0:4]!r}   — bcrypt algorithm version")
+print(f"    Cost factor: {h[4:6]!r}     — 2^12 = 4,096 Blowfish setup rounds")
+print(f"    Salt:        {h[7:29]!r} — 22 chars (16 random bytes, base64-encoded)")
+print(f"    Hash:        {h[29:]!r} — 31 chars (24 bytes of ciphertext)")
+print()
+print(f"  Total length: {len(h)} characters — always the same, regardless of password length")
+print()
+print("  The salt is embedded in the hash. You do not store it separately.")
+print("  bcrypt.checkpw() reads the salt out of the hash automatically.")
+
+
+print()
+print("=" * 70)
+print("SECTION C — Salts: same password, different hash every time")
+print("=" * 70)
+
+password = b"password123"
+print()
+print(f"  Hashing {password!r} three times:")
 print()
 
+hashes = []
+for i in range(3):
+    h = bcrypt.hashpw(password, bcrypt.gensalt(rounds=10))
+    hashes.append(h)
+    print(f"  Hash {i + 1}: {h.decode()}")
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Section B: Verify
-# ─────────────────────────────────────────────────────────────────────────────
-
-print("=" * 60)
-print("SECTION B — Verifying passwords")
-print("=" * 60)
-
-result_correct = bcrypt.checkpw(b"correct-horse-battery-staple", hashed)
-result_wrong   = bcrypt.checkpw(b"hunter2", hashed)
-
-print(f"bcrypt.checkpw(correct_password, hash) → {result_correct}")
-print(f"bcrypt.checkpw(wrong_password,   hash) → {result_wrong}")
 print()
-print("Note: checkpw() re-hashes the candidate using the salt embedded in the")
-print("stored hash, then does a constant-time comparison. No secret needed.")
+print(f"  All three are different: {len(set(hashes)) == 3}")
 print()
+print("  Verifying each hash against the original password:")
+for i, h in enumerate(hashes):
+    result = bcrypt.checkpw(password, h)
+    print(f"    Hash {i + 1}: checkpw = {result}")
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Section C: Salt means every hash is unique
-# ─────────────────────────────────────────────────────────────────────────────
-
-print("=" * 60)
-print("SECTION C — Salt uniqueness (same password → different hash)")
-print("=" * 60)
-
-pw = b"password123"
-h1 = bcrypt.hashpw(pw, bcrypt.gensalt())
-h2 = bcrypt.hashpw(pw, bcrypt.gensalt())
-h3 = bcrypt.hashpw(pw, bcrypt.gensalt())
-
-print(f"Hash 1: {h1.decode()}")
-print(f"Hash 2: {h2.decode()}")
-print(f"Hash 3: {h3.decode()}")
 print()
-print("All three verify correctly against 'password123':")
-for i, h in enumerate([h1, h2, h3], 1):
-    print(f"  Hash {i} matches: {bcrypt.checkpw(pw, h)}")
+print("  bcrypt.checkpw() extracts the salt from each stored hash,")
+print("  recomputes, and compares — so all three verify correctly.")
 print()
-print("This defeats rainbow-table attacks: the attacker must crack each hash")
-print("individually, not build a single lookup table.")
+print("  Rainbow tables are useless: precomputed hash lookups only work")
+print("  when everyone hashing 'password123' gets the same output.")
+print("  With a random salt, they never do.")
+
+
+print()
+print("=" * 70)
+print("SECTION D — Cost factor: doubling rounds, doubling time")
+print("=" * 70)
+
+password = b"timing-test"
+print()
+print("  Timing one bcrypt hash at increasing cost factors:")
 print()
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Section D: Cost factor vs. speed
-# ─────────────────────────────────────────────────────────────────────────────
-
-print("=" * 60)
-print("SECTION D — Cost factor and time (the whole point of bcrypt)")
-print("=" * 60)
-
-pw = b"test"
-print(f"{'Cost':>6}  {'Time':>8}  Iterations")
-print("-" * 40)
-for rounds in [4, 8, 10, 12]:
+for cost in [10, 12, 14]:
     start = time.perf_counter()
-    bcrypt.hashpw(pw, bcrypt.gensalt(rounds=rounds))
+    bcrypt.hashpw(password, bcrypt.gensalt(rounds=cost))
     elapsed = time.perf_counter() - start
-    print(f"  {rounds:4d}    {elapsed:6.3f}s  2^{rounds} = {2**rounds:>6,}")
+    guesses = 1 / elapsed
+    print(f"  Cost {cost:2d}: {elapsed:.3f}s  (~{guesses:,.0f} attacker guesses/sec)")
 
 print()
-print("Default (rounds=12): ~0.25s per hash → 4 attempts/sec for an attacker.")
-print("MD5 or plain SHA-256: billions of attempts per second.")
-print("The slowness is the point.")
+print("  Each step +1 doubles the computation. Cost 14 takes 4x cost 12.")
+print("  OWASP recommends cost 12 as today's minimum for new systems.")
+print("  Choose a cost that takes ~100–300ms on your server hardware.")
