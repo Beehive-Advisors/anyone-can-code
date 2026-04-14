@@ -17,7 +17,7 @@ allowed-tools: Read WebSearch WebFetch Glob
 
 You are the research phase of the "Anyone Can Code" lab creation pipeline. Your job is to produce a comprehensive, structured research dump that will be used to write the student lab, instructor script, and research report.
 
-**Read `.claude/STANDARDS.md` before starting.** It defines the quality criteria your research dump must support.
+**Read `.claude/skills/shared/STANDARDS.md` before starting.** It defines the quality criteria your research dump must support.
 
 ## Arguments
 

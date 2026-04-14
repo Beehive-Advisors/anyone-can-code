@@ -16,7 +16,7 @@ allowed-tools: Read Glob Bash Write
 
 You are the quality review phase of the "Anyone Can Code" lab pipeline. Read all files fresh — no assumptions about what they contain.
 
-**Before starting:** Read `.claude/STANDARDS.md`, `.claude/lab-template.md`, and `.claude/script-template.md`. Detect the file extensions present in `$0/` and read the relevant `.claude/tech-standards/<lang>.md` files. These are the complete criteria you will apply.
+**Before starting:** Read `.claude/skills/shared/STANDARDS.md`, `.claude/skills/shared/lab-template.md`, and `.claude/skills/shared/script-template.md`. Detect the file extensions present in `$0/` and read the relevant `.claude/skills/shared/tech-standards/<lang>.md` files. These are the complete criteria you will apply.
 
 ## Arguments
 
@@ -35,7 +35,7 @@ Read all files in `LAB_DIR`. If the directory or any required file (`{LAB_PREFIX
 
 ### 1a. Demo Code Quality
 
-For each demo file, check language-specific rules from the relevant `.claude/tech-standards/*.md` file.
+For each demo file, check language-specific rules from the relevant `.claude/skills/shared/tech-standards/*.md` file.
 
 **Universal checks for all demo files:**
 - Exits with code 0 — run it and capture stdout+stderr
@@ -53,7 +53,7 @@ For each demo file, check language-specific rules from the relevant `.claude/tec
 - `Dockerfile`: `docker build -t test-lab . 2>&1; echo "Exit: $?"`
 - Kubernetes YAML: `kubectl apply -f <file> --dry-run=client 2>&1; echo "Exit: $?"`
 
-Apply all rules from the matching `.claude/tech-standards/<lang>.md` to each file.
+Apply all rules from the matching `.claude/skills/shared/tech-standards/<lang>.md` to each file.
 
 ### 1b. Script ↔ Lab Alignment
 
@@ -84,7 +84,7 @@ Exempt: infrastructure run as a black box, code reused unchanged from a prior la
 
 Read `{LAB_PREFIX}-lab.md`.
 
-**Structure checks (follow `.claude/lab-template.md`):**
+**Structure checks (follow `.claude/skills/shared/lab-template.md`):**
 - [ ] Header has Section, Prerequisites, Time, Files
 - [ ] Has `## What you'll build` with numbered concrete outcomes
 - [ ] Has `## Setup` with correct stack commands
@@ -96,7 +96,7 @@ Read `{LAB_PREFIX}-lab.md`.
 **First-principles check (spot-check first 5 technical terms):**
 For each of the first 5 technical terms introduced, verify it is explained from first principles before it's used as if already known. Flag any term that appears without prior definition.
 
-**Interactivity check (per `.claude/STANDARDS.md`):**
+**Interactivity check (per `.claude/skills/shared/STANDARDS.md`):**
 - [ ] Every Part has ≥1 moment where the student types code or a command themselves
 - [ ] Every Part has ≥1 question testing WHY (not syntax recall or flag trivia)
 - [ ] All questions use `<details><summary>Answer</summary>` collapsible format

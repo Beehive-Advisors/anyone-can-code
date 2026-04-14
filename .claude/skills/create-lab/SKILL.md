@@ -15,7 +15,7 @@ allowed-tools: Read Write Edit Glob Grep Bash Agent WebSearch WebFetch
 
 You are building a complete lab for the "Anyone Can Code" Udemy course. This is a fully autonomous workflow — run all phases to completion without pausing for user confirmation unless something breaks.
 
-**Before writing any deliverable:** read `.claude/STANDARDS.md`, `.claude/lab-template.md`, and `.claude/script-template.md`. These are authoritative — follow them exactly. For any demo files you write, also read the relevant `.claude/tech-standards/<language>.md` file(s) for each language you use.
+**Before writing any deliverable:** read `.claude/skills/shared/STANDARDS.md`, `.claude/skills/shared/lab-template.md`, and `.claude/skills/shared/script-template.md`. These are authoritative — follow them exactly. For any demo files you write, also read the relevant `.claude/skills/shared/tech-standards/<language>.md` file(s) for each language you use.
 
 ## Arguments
 
@@ -137,7 +137,7 @@ Using `RESEARCH_DUMP` and `LEARNING_OBJECTIVES`, do all of the following in sequ
 
 **Step 1: Choose the technology stack**
 
-Based on the topic and research, choose the most direct, least-abstracted tool. Use judgment from the research — there is no hardcoded decision table. Read `.claude/tech-standards/<language>.md` for each language you plan to use.
+Based on the topic and research, choose the most direct, least-abstracted tool. Use judgment from the research — there is no hardcoded decision table. Read `.claude/skills/shared/tech-standards/<language>.md` for each language you plan to use.
 
 Document your decision: "This lab uses [TECH STACK] because [REASON]."
 
@@ -163,7 +163,7 @@ Stop if any install fails — report the exact error.
 
 **Step 5: Write the demo files**
 
-Write each demo file using the `Write` tool. Follow `.claude/tech-standards/<language>.md` for all language-specific rules (headers, section banners, output labeling, known gotchas).
+Write each demo file using the `Write` tool. Follow `.claude/skills/shared/tech-standards/<language>.md` for all language-specific rules (headers, section banners, output labeling, known gotchas).
 
 Universal rules (all languages):
 - Header comment explaining what the file is and how to run it
@@ -249,12 +249,12 @@ Write `$0/[LAB_ID]-report.md`. Target: 200–400 lines.
 
 Write `$0/[LAB_ID]-lab.md`. Target: 400–600 lines. Shorter is better.
 
-Follow `.claude/lab-template.md` exactly for section order, heading names, and formatting rules. Follow `STANDARDS.md` for all pedagogical requirements.
+Follow `.claude/skills/shared/lab-template.md` exactly for section order, heading names, and formatting rules. Follow `STANDARDS.md` for all pedagogical requirements.
 
 Key reminders:
 - First principles before jargon — start with the problem, not the solution name
 - Students must type in every Part (not just run a script)
-- Every Part has a conceptual question testing WHY (see `.claude/STANDARDS.md` for good/bad examples)
+- Every Part has a conceptual question testing WHY (see `.claude/skills/shared/STANDARDS.md` for good/bad examples)
 - Platform splits for any CLI tool installs
 - All output blocks use verbatim Phase 3 captures
 
@@ -262,7 +262,7 @@ Key reminders:
 
 ## PHASE 6: Write Instructor Script(s)
 
-Follow `.claude/script-template.md` exactly for beat format, section structure, and file naming.
+Follow `.claude/skills/shared/script-template.md` exactly for beat format, section structure, and file naming.
 
 **When lesson code exists** (demo files students need to understand, not just run):
 Write TWO files:
@@ -290,7 +290,7 @@ Spawn with:
 
 You are reviewing Lab $0 of the "Anyone Can Code" course. Read all files in `$0/` fresh.
 
-1. Read `STANDARDS.md`, `lab-template.md`, `script-template.md`, and all relevant `.claude/tech-standards/<lang>.md` files from the repo root.
+1. Read `STANDARDS.md`, `lab-template.md`, `script-template.md`, and all relevant `.claude/skills/shared/tech-standards/<lang>.md` files from the repo root.
 2. Read and follow the full `/review-lab` skill at `.claude/skills/review-lab/SKILL.md`.
 3. Apply it to lab `$0`.
 4. Return a structured PASS/FAIL report by component with specific fix instructions.
