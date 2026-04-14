@@ -388,6 +388,18 @@ Python (uv), npm, and Docker don't need splits.
 **5. Code walkthrough reference.**
 When lesson code exists, add one sentence directing students to the walkthrough video. No inline code explanations.
 
+**6. Students must type, not just watch.**
+Every Part must include at least one moment where the student types a command or code snippet
+themselves — not just runs a pre-written script. Pre-written scripts are fine as demonstrations
+after the student has typed something first. Acceptable forms:
+- A Python REPL one-liner that lets them see an immediate result before the full demo
+- A curl command they type manually (not a script that runs it for them)
+- A short code block they write and run themselves as part of an exercise
+
+Banned: Parts where the only student action is running a single pre-written script command
+(`python3.12 demo.py` or `bash flow.sh`) and reading the output. There must also be a moment
+where the student types the core concept themselves.
+
 ### Structure:
 
 ```markdown
@@ -565,9 +577,24 @@ code [filename]
 ```
 (opens the file in VS Code — instructor narrates from the editor)
 
-**EXPLAIN**
-> "[Line-by-line narration. What does this function do? Why bytes not strings?
-> Why this constant? Connect code decisions back to the concept just explained.]"
+**EXPLAIN** (lines N–M — description of block)
+```python
+# paste the exact lines from the file being explained
+# use the application language (python, typescript, etc.) — NEVER bash
+# this lets the instructor read the script without switching to the editor
+```
+> "[Line-by-line narration with exact line numbers. Every code reference must name the
+> specific line(s): 'Line 49 is the speedup formula', 'Lines 73–76 slice the hash string'.
+> What does this function do? Why bytes not strings? Why this constant? Connect code
+> decisions back to the concept just explained.]"
+
+**Rules for EXPLAIN beats in code walkthroughs:**
+- The parenthetical `(lines N–M — brief description)` is required after `**EXPLAIN**`
+- Quote the actual code lines in a fenced block using the **application language** (`python`,
+  `typescript`, `go`, etc.) — never `bash`. The instructor reads the script; showing the
+  code means they don't have to cross-reference the file while speaking.
+- The narration text (inside `> "..."`) then explains those specific lines by number.
+- Never say "this line" or "look here" without a line number.
 
 [Repeat for each section / key function in the file]
 
