@@ -170,11 +170,10 @@ Exempt:
 - [ ] Python (uv), npm, and Docker commands do NOT need platform splits (same on both)
 
 **Interactivity check:**
-- [ ] Every Part has at least TWO interactive elements beyond "run this and read output":
-  - Prediction prompts (predict before running, collapsible answer)
-  - Fill-in-the-blank commands or code with `_____` (collapsible solution)
-  - Short-answer conceptual questions (collapsible answer)
-  - "Try it" variations asking students to modify an example
+- [ ] Every Part has at least one question that tests first-principles understanding — not flag trivia or syntax recall
+- [ ] Questions ask WHY something works, not WHAT flag to type
+- [ ] All questions have `<details><summary>Answer</summary>` collapsible answers
+- [ ] Flag: any question that could be answered by just re-reading the command (e.g., "what flag does X?") — these must be replaced with conceptual questions
 
 **First-principles check (spot-check first 5 technical terms):**
 For the first 5 technical terms introduced (e.g., "hash function", "salt", "JWT", "bearer token", "authorization code"):

@@ -353,16 +353,40 @@ All source URLs must come from `RESEARCH_DUMP`. Do not invent URLs.
 
 Write `$0/[LAB_ID]-lab.md`.
 
-**Target length:** 500–700 lines.
+**Target length:** 400–600 lines. Shorter is better. Every sentence must earn its place.
 
-### Critical accessibility rule (non-negotiable):
+### Rules (all non-negotiable):
 
-Every technical term must be defined from first principles **the first time it appears**. Never use a term as if the reader already knows it.
+**1. First principles before jargon.**
+Every technical term is explained from scratch the first time it appears. Start with the problem being solved, not the solution name.
+- Wrong: "bcrypt is a password hashing function"
+- Right: "A hash function takes any input and produces a fixed-length output. It's one-way — you can't reverse it. Websites use this to store passwords without storing the actual password. bcrypt is a hash function built specifically for passwords."
 
-- **Wrong:** "bcrypt is a password hashing function that..."
-- **Right:** "A hash function takes any input — a word, a file, a whole database — and produces a fixed-length string of characters. [explain hash properties] ... bcrypt is a hash function designed specifically for passwords."
+**2. Ruthless simplicity.**
+Say one thing per sentence. One concept per paragraph. If you can cut a sentence without losing meaning, cut it. Never repeat a concept already explained in a prior section.
 
-Pattern: establish the concept → then name it → then use it freely.
+**3. Interactivity — but only questions that test first-principles understanding.**
+Every Part must include at least ONE question or prompt that makes the student reason about the concept — not recall syntax or flag names.
+
+Good question: *"Why would the server wait forever if you don't send the blank line?"*
+Bad question: *"What flag suppresses the progress bar?"*
+
+The test: could a student answer this question by thinking through the concept, even without having memorized the specific tool's syntax? If yes, it's a good question. If it's just flag trivia, cut it.
+
+Format: state the question, then `<details><summary>Answer</summary>explanation</details>`.
+
+**4. Platform splits for CLI tools.**
+Every CLI tool install shows both platforms:
+
+```
+**macOS:** `brew install [tool]`  
+**Linux / WSL:** `sudo apt install [tool]`
+```
+
+Python (uv), npm, and Docker don't need splits.
+
+**5. Code walkthrough reference.**
+When lesson code exists, add one sentence directing students to the walkthrough video. No inline code explanations.
 
 ### Structure:
 
@@ -434,40 +458,13 @@ python3.12 [filename].py
 
 [Explanation of what each labeled line means.]
 
-**Code walkthrough reference (include when lesson code exists):**
+**Code walkthrough reference (one sentence when lesson code exists):**
+> "Before running, open `[filename]` in VS Code — the code walkthrough video covers each section."
 
-Do NOT include inline code walkthroughs in the student lab. Instead, add a short
-note directing the student to read the code or refer to the code walkthrough video:
-
-> "Before running this section, open `[filename]` in VS Code and read through it.
-> The code walkthrough video covers each section in detail."
-
-This applies to Python, TypeScript, AND bash demo scripts that ARE the lesson.
-**Exempt only when** the file is infrastructure run as a black box (provided server,
-Docker image, startup script), or code reused unchanged from a prior lab.
-
-### Interactivity requirement (non-negotiable):
-
-Every Part must include at least TWO interactive elements beyond just "run this command":
-
-- **Prediction prompt** — before showing output, ask the student to predict something:
-  > "Before running, predict: what status code will this return? Write it down."
-  Follow with a `<details><summary>Answer</summary>` collapsible.
-
-- **Fill-in-the-blank** — show a command or code snippet with `_____` where the student
-  must supply a flag, value, or keyword. Collapsible solution reveals the answer:
-  ```bash
-  curl -s _____ /dev/null -w "Status: %{http_code}\n" http://example.com/
-  ```
-  > What flag goes in the blank? `<details><summary>Answer</summary>-o</details>`
-
-- **Short-answer question** — ask a conceptual question they must answer before revealing:
-  > "What does the blank line between headers and body signal to the server?"
-  `<details><summary>Answer</summary>The server stops reading headers and waits for the body.</details>`
-
-- **"Try it" variation** — after a working example, ask them to modify it for a slightly different goal before giving the solution.
-
-Goal: students must actively engage at each step, not passively read and run.
+**Conceptual question (one per Part):**
+Ask something that requires the student to reason about the concept, not recall syntax.
+> **Why does [X] work this way?**
+> `<details><summary>Answer</summary>[explanation from first principles]</details>`
 
 ### Exercise
 
