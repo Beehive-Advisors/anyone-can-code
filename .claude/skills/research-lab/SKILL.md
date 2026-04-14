@@ -40,7 +40,7 @@ For each concept identified in the syllabus entry, use `WebSearch` and `WebFetch
 
 1. **First-principles explanation**
    - What problem does this solve?
-   - How would you explain it to someone who only knows basic programming?
+   - How would you explain it to someone who only knows basic terminal usage and Python basics?
    - What is the concept before you give it a name?
 
 2. **Internal mechanics**
@@ -48,36 +48,53 @@ For each concept identified in the syllabus entry, use `WebSearch` and `WebFetch
    - What happens at the byte/packet/function-call level
    - Not just "what it does" but "how it works"
 
-3. **Python library details**
-   - PyPI package name (exact, for `uv pip install`)
-   - Current stable version
-   - Key function names and signatures
-   - How to import and use it in 5 lines or fewer (core usage)
+3. **Tool and library details** (research ALL viable options — don't assume Python)
+   - Shell/CLI tools available (curl, nc, openssl, dig, tcpdump, ss, iptables, etc.)
+   - Python libraries if applicable (PyPI name, version, key API)
+   - TypeScript/Node.js packages if applicable (npm name, version, key API)
+   - Which tool gives the most direct, least-abstracted view of the concept?
 
 4. **Constraints and gotchas** (critical — these cause bugs)
-   - Input type requirements (bytes vs. str, encoding issues)
-   - Key length requirements (e.g., PyJWT HS256 needs exactly 32-byte key)
-   - Deprecated functions (e.g., `datetime.utcnow()` deprecated in Python 3.12)
+   - Platform differences (macOS BSD tools vs. GNU Linux tools)
+   - Input type requirements (bytes vs. str, encoding issues, key lengths)
    - Version compatibility issues
+   - Common student errors
 
 5. **Source URLs** (minimum 3 per concept)
-   - Official documentation
+   - Official documentation or man page
    - RFC or specification (if applicable)
-   - PyPI package page
-   - Well-known tutorial or reference (e.g., Real Python, MDN, OWASP)
+   - Package page (PyPI, npm, etc.)
+   - Well-known tutorial or reference (Real Python, MDN, OWASP, etc.)
 
 6. **Demo design suggestions**
    - What sections would make a good demo file?
-   - What intermediate values should be printed to show students the internals?
-   - What contrast/comparison would be most instructive (e.g., fast hash vs. slow hash)?
+   - What intermediate values should be printed/output to show students the internals?
+   - What contrast/comparison would be most instructive?
 
-## Step 3: Synthesize Lab Design Rationale
+## Step 3: Synthesize Lab Design Rationale + Technology Recommendation
 
-After researching all concepts, answer:
-- Should the demo use a local server or a real external API? Why?
-- What are the tradeoffs of the approach you'd recommend for a beginner audience?
-- Are there any concepts that can be demonstrated with stdlib only (no third-party library)?
-- What's the minimum viable demo that shows the key insight for each concept?
+After researching all concepts, produce a technology recommendation:
+
+**Technology decision framework:**
+
+| If the lab is about... | Preferred approach | Why |
+|------------------------|-------------------|-----|
+| Protocols and networking (HTTP, DNS, TCP, TLS) | Shell scripts — curl, nc, openssl, dig | Closest to the wire, shows raw bytes/text |
+| OS and system tools (processes, files, permissions) | Shell commands directly | Students should use the real tool |
+| Crypto, auth, hashing, JWT | Python 3.12 with uv | Excellent libraries, short readable demos |
+| Building a backend API or server | Python (FastAPI/Flask) or TypeScript (Express/Node.js) | Pick based on what's being taught |
+| Frontend / full-stack UI | TypeScript + Next.js 15 + shadcn/ui + Tailwind CSS | Modern production stack |
+| Databases | Direct CLI tools first (psql, redis-cli, mongosh), then ORM/driver if needed | Students see the protocol, not abstraction |
+| Container / infrastructure | Docker CLI, kubectl, shell scripts | The tools themselves are what's being learned |
+
+**Decision rule: Always use the most direct tool first. Shell before Python. CLI before library. Only add a higher-level abstraction when that abstraction is what the lab is explicitly teaching.**
+
+Answer these questions:
+- What is the right technology stack for this lab? (shell, Python, TypeScript, multiple?)
+- Should the demo use a local server or a real external service? Why?
+- Are there any concepts demonstrable without any dependencies (stdlib/shell only)?
+- What's the minimum viable demo that delivers the key insight for each concept?
+- Any platform considerations for macOS vs. Linux/WSL students?
 
 ## Output Format
 
@@ -101,13 +118,12 @@ Return the full research dump in this structure. Do NOT truncate. This will be u
 ### Internal Mechanics
 [How it actually works — algorithm, steps, data flow]
 
-### Python Library: [package-name]
-- PyPI: `package-name`
-- Version: X.Y.Z
-- Install: `uv pip install package-name`
-- Core usage:
-  [5-line code example]
-- Key functions: [list with signatures]
+### Tools and Libraries
+[For shell tools: exact commands, key flags, platform notes (macOS vs. Linux)]
+[For Python: PyPI name, version, `uv pip install <name>`, key function signatures]
+[For TypeScript/Node: npm package name, version, `npm install <name>`, key API]
+[For Docker/kubectl/CLI tools: exact commands to install and use]
+- Recommended approach: [which tool is most direct for this concept?]
 
 ### Constraints and Gotchas
 - [Gotcha 1]

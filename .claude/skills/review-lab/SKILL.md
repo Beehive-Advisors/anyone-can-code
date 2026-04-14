@@ -38,29 +38,59 @@ If the directory or any required file doesn't exist, stop and report what's miss
 
 ## Component 1: Demo Code Quality
 
-For each `.py` file in `LAB_DIR`:
+First, identify what tech stack this lab uses (look at file extensions and content).
 
-**Actually run each file:**
+**For each `.sh` file:**
 ```bash
-cd LAB_DIR && source .venv/bin/activate && python3.12 <filename> 2>&1
-echo "Exit: $?"
+bash <filename> 2>&1; echo "Exit: $?"
 ```
+- [ ] Exits with code 0 (no errors)
+- [ ] Has `#!/usr/bin/env bash` header
+- [ ] Has section banners with `═══` or `───` separators
+- [ ] Every command has a comment above it explaining what it does
+- [ ] Output is labeled so students know what each line means
 
-Check:
+**For each `.py` file:**
+```bash
+cd LAB_DIR && source .venv/bin/activate && python3.12 <filename> 2>&1; echo "Exit: $?"
+```
 - [ ] Exits with code 0 (no errors)
 - [ ] Zero warnings (no DeprecationWarning, InsecureKeyLengthWarning, etc.)
-- [ ] Has shebang `#!/usr/bin/env python3` on line 1
-- [ ] Has docstring on lines 2–5 that includes `Run: python3.12 <filename>`
-- [ ] Section banners present: `# ─────────────────────────────────────────────────────────────────────────────` style AND `print("=" * 70)` + `print("SECTION X — ...")` style
+- [ ] Has shebang `#!/usr/bin/env python3` and a header docstring with `Run: python3.12 <filename>`
+- [ ] Section banners present: `# ───` style AND `print("=" * 70)` + section title print
 - [ ] No `datetime.utcnow()` — must use `datetime.now(timezone.utc)`
-- [ ] If PyJWT is used: SECRET key is exactly 32 bytes (count the characters)
-- [ ] If bcrypt is used: password inputs are `b"..."` bytes, not `"..."` str
-- [ ] Every `print()` line is labeled (e.g., `f"Hash: {hash}"` not just `print(hash)`)
+- [ ] If PyJWT: SECRET key is exactly 32 bytes
+- [ ] If bcrypt: password inputs are `b"..."` bytes, not `"..."` str
+- [ ] Every `print()` line is labeled
 
-For each `.sh` file:
-- [ ] Has `#!/usr/bin/env bash` header
-- [ ] Has section banners with `─────` separators
-- [ ] Each curl command has a comment above it explaining what it does
+**For each `.ts` / `.js` / Node.js file:**
+```bash
+cd LAB_DIR && npx ts-node <filename> 2>&1; echo "Exit: $?"  # or node <file>.js
+```
+- [ ] Exits with code 0
+- [ ] Zero unhandled errors/warnings
+- [ ] Header comment with `Run:` instruction
+- [ ] Section banners using `console.log("=".repeat(60))` + section title
+- [ ] All console output is labeled
+
+**For Next.js / full-stack apps:**
+```bash
+cd LAB_DIR && npm run build 2>&1; echo "Exit: $?"
+```
+- [ ] Build succeeds with no TypeScript errors
+- [ ] No ESLint errors
+- [ ] Components use shadcn/ui + Tailwind (no inline styles unless intentional)
+
+**For Docker/Kubernetes files:**
+- [ ] `Dockerfile` builds: `docker build -t test-lab .`
+- [ ] `docker-compose.yaml` or `compose.yaml` starts cleanly: `docker compose up -d`
+- [ ] Kubernetes YAML applies: `kubectl apply -f deployment.yaml --dry-run=client`
+- [ ] Config files (nginx.conf, etc.) validated if tool is available
+
+**For all files regardless of type:**
+- [ ] Every output/log line is labeled — students must know what each line means
+- [ ] Section structure is present (3–4 sections per demo file)
+- [ ] Last section is a practical contrast/demonstration (not just setup)
 
 ---
 
@@ -109,7 +139,7 @@ Read `{LAB_PREFIX}-lab.md`.
 **Structure checks:**
 - [ ] Has header with: Section name, Prerequisites, Time estimate, Files
 - [ ] Has `## What you'll build` with a numbered list of concrete outcomes
-- [ ] Has `## Setup` with exact `uv venv .venv --python 3.12`, `source .venv/bin/activate`, and `uv pip install` commands
+- [ ] Has `## Setup` with the correct setup commands for this lab's tech stack (uv+Python, npm+Node, Docker pull, or brew install for CLI tools)
 - [ ] Two-terminal setup note present IF any demo requires two simultaneous processes (server + client)
 - [ ] Every `## Part N` has at least one `### Exercise` subsection
 - [ ] Every exercise has a `<details><summary>Solution` collapsible block
@@ -167,9 +197,13 @@ After running all checks, write `LAB_DIR/README.md` with this content:
 
 ```bash
 cd [LAB_ID]
-uv venv .venv --python 3.12
-source .venv/bin/activate
-uv pip install [packages]
+# Python labs:
+uv venv .venv --python 3.12 && source .venv/bin/activate && uv pip install [packages]
+# Node.js labs:
+npm install
+# Docker labs:
+docker pull [image]:[tag]
+# Shell-only labs: brew install [tool] / apt install [tool]
 ```
 
 ## Files

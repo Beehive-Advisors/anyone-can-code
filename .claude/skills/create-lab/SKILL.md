@@ -138,119 +138,135 @@ Store the Agent's full return value as `RESEARCH_DUMP`. Do not proceed to Phase 
 
 ---
 
-## PHASE 2: Plan Demo Files
+## PHASE 2: Choose Technology and Plan Demo Files
 
-Using `RESEARCH_DUMP` and `LEARNING_OBJECTIVES`, decide and write down a concrete plan before touching any files:
+Using `RESEARCH_DUMP` and `LEARNING_OBJECTIVES`, make a technology decision FIRST. Write the plan down before creating any files.
 
-1. **How many Python demo files?** One per major concept. Name them `{concept}_demo.py` (e.g., `hash_demo.py`, `jwt_demo.py`).
-2. **Shell scripts needed?** Only if a demo requires two simultaneous processes (e.g., a local server + a client). Name them `{concept}_flow.sh`.
-3. **What sections does each file have?** 3–4 sections per file. Name each section (e.g., "Section A: Hashing a password", "Section B: Verifying").
-4. **What PyPI packages are needed?** List exact names for `uv pip install`.
-5. **What will each section print?** Describe the expected output structure (not exact values — just the labels and data types).
+### Step 2a: Choose the Technology Stack
 
-Write this plan as a numbered list. Keep it. It drives the rest of Phase 3.
+Apply this decision framework — always prefer the most direct, least-abstracted tool:
+
+| If the lab is about... | Preferred approach |
+|------------------------|-------------------|
+| Protocols and networking (HTTP, DNS, TCP, TLS) | Shell scripts — `curl`, `nc`, `openssl`, `dig`, `tcpdump` |
+| OS and system tools (processes, files, permissions) | Shell commands directly; minimal wrapper scripts |
+| Crypto, auth, hashing, JWT | Python 3.12 via `uv` — best libraries, short readable demos |
+| Backend API / server | Python (FastAPI/Flask) OR TypeScript (Express/Node) — pick based on what's taught |
+| Frontend / full-stack UI | TypeScript + Next.js 15 + shadcn/ui + Tailwind CSS |
+| Databases | Direct CLI tools first (psql, redis-cli, mongosh), driver/ORM only if needed |
+| Containers | Docker CLI + shell scripts; `kubectl` for Kubernetes labs |
+| Infrastructure (nginx, load balancing, VPCs) | Shell + cloud CLI tools (aws, gcloud); YAML/config files |
+| GPU / ML workloads | Python 3.12 via `uv` with PyTorch; shell for nvidia-smi |
+
+**Rule: Shell before Python. CLI before library. Add a higher-level language only when its libraries or abstractions are explicitly what's being taught.**
+
+Document your decision: "This lab uses [TECH STACK] because [REASON]."
+
+### Step 2b: Plan the Demo Files
+
+Based on your technology choice, plan:
+
+1. **What files are needed?** Name them descriptively:
+   - Shell: `{concept}_demo.sh`, `{concept}_flow.sh`
+   - Python: `{concept}_demo.py`
+   - TypeScript: `{concept}_demo.ts`, or a Next.js app scaffold
+   - Config files: `nginx.conf`, `Dockerfile`, `deployment.yaml`, `compose.yaml`
+
+2. **What sections does each file have?** 3–4 sections per file with clear banners.
+
+3. **What dependencies are needed?**
+   - Shell-only: none (check if `nc`, `tcpdump`, etc. need `brew install` on macOS)
+   - Python: exact PyPI packages for `uv pip install`
+   - TypeScript/Node: exact npm packages
+   - Docker: image names and versions to pull
+   - Kubernetes: which manifest files to write (Deployment, Service, etc.)
+
+4. **What will each section output?** Describe the expected output structure.
+
+Write the plan as a numbered list before proceeding.
 
 ---
 
-## PHASE 3: Create Directory and Write Demo Files
+## PHASE 3: Create Directory and Set Up Environment
 
 **Step 1: Create the directory**
 ```bash
 mkdir -p $0
 ```
 
-**Step 2: Set up Python environment**
+**Step 2: Set up the runtime environment** (based on technology chosen in Phase 2)
+
+**If Python:**
 ```bash
-cd $0 && uv venv .venv --python 3.12 && source .venv/bin/activate && uv pip install [packages from Phase 2]
+cd $0 && uv venv .venv --python 3.12 && source .venv/bin/activate && uv pip install [packages]
 ```
-If `uv pip install` fails: **stop immediately** and report the exact error. Do not proceed until dependencies install cleanly.
+Stop if install fails — report exact error.
+
+**If TypeScript/Node.js:**
+```bash
+cd $0 && npm init -y && npm install [packages]
+```
+For Next.js apps: `npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"` then `npx shadcn@latest init`.
+
+**If shell-only:** No setup needed — confirm required CLI tools are available:
+```bash
+which curl nc openssl [whatever tools the lab uses]
+```
+If a tool is missing on macOS, note the `brew install` command in the lab setup section.
+
+**If Docker/Kubernetes:**
+```bash
+docker --version && kubectl version --client  # verify tools present
+```
+Pull any required images early: `docker pull [image]:[tag]`
 
 **Step 3: Write each demo file**
 
-Use the `Write` tool to create each `.py` and `.sh` file in `LAB_DIR`.
+Use the `Write` tool. All demo files must follow these rules regardless of language:
 
-### Non-negotiable rules for EVERY Python demo file:
+**Section structure (adapt syntax to the language):**
+- Shell: `echo ""; echo "═══════════════════════════════════"; echo "SECTION A — [description]"; echo "═══════════════════════════════════"`
+- Python: `print(); print("=" * 70); print("SECTION A — [description]"); print("=" * 70)`
+- For config files (Dockerfile, YAML): use comment sections `# ─── Section A: [description] ───`
 
-**File header (exactly this format):**
-```python
-#!/usr/bin/env python3
-"""
-Lab $0 – Part N: [CONCEPT NAME]
-Run: python3.12 [filename].py
-"""
-```
+**Every demo file has:**
+- A header comment explaining what it is and how to run it
+- At least 3 sections (ideally 4)
+- Labeled output — students must know what each line means
+- The last section is always a practical contrast/demonstration (e.g., with-vs-without, before-vs-after, break-and-fix)
 
-**Imports:** All at top of file. stdlib before third-party. One blank line between stdlib and third-party blocks.
+**No warnings or errors on run.** Fix the underlying cause — never suppress.
 
-**Section banners (use this exact format for every section):**
-```python
-# ─────────────────────────────────────────────────────────────────────────────
-# Section A: [description]
-# ─────────────────────────────────────────────────────────────────────────────
+**Python-specific rules (only when using Python):**
+- `datetime.now(timezone.utc)` not `datetime.utcnow()` (deprecated in 3.12)
+- bcrypt inputs must be bytes: `b"password"` not `"password"`
+- PyJWT HS256 key must be exactly 32 bytes
+- Never `warnings.filterwarnings("ignore")` — fix the cause
 
-print()
-print("=" * 70)
-print("SECTION A — [description]")
-print("=" * 70)
-```
-
-**Labeled output:** Every print statement must have a label so students know what they're reading:
-- Good: `print(f"Hash      : {hash_value}")`
-- Good: `print(f"Token:\n{token}\n")`
-- Bad: `print(hash_value)` (unlabeled — student doesn't know what this is)
-
-**Python 3.12 datetime:** Always use `datetime.now(timezone.utc)`, never `datetime.utcnow()` (deprecated).
-
-**PyJWT HS256 key:** Must be exactly 32 bytes. Use: `SECRET = "this-is-exactly-32-bytes-long!!!"` (count: 32 chars). Do not use any other length.
-
-**bcrypt inputs:** Must be bytes: `bcrypt.hashpw(b"my-password", salt)` — not `"my-password"`.
-
-**No `warnings.filterwarnings("ignore")`:** Never suppress warnings. Fix the underlying cause instead.
-
-**Section count:** At least 3 sections per file, ideally 4. The last section should always be a practical demonstration (tampering attempt, timing comparison, verification, etc.).
-
-### Non-negotiable rules for shell scripts:
-
-```bash
-#!/usr/bin/env bash
-# ─────────────────────────────────────────────────────────────────────────────
-# [Description of what this script demonstrates]
-# ─────────────────────────────────────────────────────────────────────────────
-```
-
-Each `curl` command must have a comment above it explaining what it does and why.
+**Shell script rules:**
+- `#!/usr/bin/env bash` header
+- Every command has a comment above it explaining what it does
+- Use `set -e` only when you want to stop on errors; otherwise handle errors explicitly
 
 ---
 
 ## PHASE 4: Run and Test ALL Demo Files — Capture Exact Output
 
-**This phase is the most critical.** The script and lab must use actual tested output, not invented output. Do this phase completely before writing any `.md` files.
+**This phase is critical.** The script and lab must use actual tested output, not invented output. Complete this phase entirely before writing any `.md` files.
 
-### For each Python file:
+**Run command by tech:**
 
-```bash
-cd $0 && source .venv/bin/activate && python3.12 [filename].py 2>&1
-```
+- Shell script: `bash [filename].sh 2>&1`
+- Python: `cd $0 && source .venv/bin/activate && python3.12 [filename].py 2>&1`
+- TypeScript/Node: `cd $0 && node [filename].js 2>&1` or `npx ts-node [filename].ts 2>&1`
+- Docker: `docker run [image] [command] 2>&1`
+- Multi-process (server + client): start server in background (`&`), run client, kill server
 
-**If exit code is not 0:** Stop. Read the error. Fix the file using `Edit`. Re-run. Do NOT proceed to the next file until this one exits cleanly.
+**If exit code is not 0:** Stop. Read the error. Fix with `Edit`. Re-run. Never proceed until clean.
 
-**Common errors and fixes:**
-- `ImportError` → run `uv pip install <missing-package>` in the venv
-- `ValueError: The secret ... is too short` (PyJWT) → count the SECRET characters — must be exactly 32
-- `DeprecationWarning: datetime.utcnow()` → replace with `datetime.now(timezone.utc)`
-- `TypeError: Unicode-objects must be encoded before hashing` (bcrypt) → use `b"..."` bytes, not `"..."` str
+**Store captured stdout as `OUTPUT_[filename]`.** This is the ground truth for Phases 6 and 7. Never paraphrase — paste verbatim.
 
-### For shell scripts (if any):
-
-These typically require a background server:
-```bash
-cd $0 && source .venv/bin/activate
-python3.12 [server_file].py &
-SERVER_PID=$!
-sleep 1
-bash [script_file].sh 2>&1
-kill $SERVER_PID
-```
+**Note on random/variable values:** Some output changes each run (hashes, tokens, ports, timestamps). In OUTPUT blocks: paste the actual captured output, add a note: `*(Your [value] will look different — structure is the same.)*`
 
 ### Store the output:
 
@@ -658,9 +674,13 @@ Spawn an Agent with:
 You are a quality reviewer for the "Anyone Can Code" course. Review the lab at `$0/` against the following checklist. Read every file fresh. Run every demo file. Be ruthless.
 
 **Component 1: Demo Code Quality**
-For each `.py` file in `$0/`:
-- Run it: `cd $0 && source .venv/bin/activate && python3.12 <file> 2>&1; echo "Exit: $?"`
-- Check: exits 0, zero warnings, has shebang + docstring, section banners present, no `datetime.utcnow()`, bcrypt inputs are bytes, PyJWT key is exactly 32 bytes, every print line is labeled
+Identify the tech stack from file extensions. For each demo file:
+- `.sh`: `bash <file> 2>&1; echo "Exit: $?"` — check exits 0, has bash header, every command commented, output labeled
+- `.py`: `cd $0 && source .venv/bin/activate && python3.12 <file> 2>&1; echo "Exit: $?"` — check exits 0, zero warnings, shebang+docstring, section banners, no `datetime.utcnow()`, bcrypt bytes, PyJWT 32-byte key, every print labeled
+- `.ts`/`.js`: `cd $0 && npx ts-node <file> 2>&1; echo "Exit: $?"` — check exits 0, no unhandled errors, labeled console output, section banners
+- `Dockerfile`: `docker build -t test-lab . 2>&1` — check build succeeds
+- Kubernetes YAML: `kubectl apply -f <file> --dry-run=client 2>&1` — check no validation errors
+- All files: section structure present (3–4 sections), last section is a practical demonstration
 
 **Component 2: Script ↔ Lab Alignment**
 Read both `$0/$0-lab.md` and `$0/$0-script.md`.
