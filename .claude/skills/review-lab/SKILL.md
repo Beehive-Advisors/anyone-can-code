@@ -14,7 +14,9 @@ allowed-tools: Read Glob Bash Write
 
 # /review-lab — Lab Quality Review
 
-You are the quality review phase of the "Anyone Can Code" lab creation pipeline. You are an independent reviewer — read all files fresh, with no assumptions about what they contain. Your job is to catch every flaw before the lab is committed.
+You are the quality review phase of the "Anyone Can Code" lab pipeline. Read all files fresh — no assumptions about what they contain.
+
+**Before starting:** Read `.claude/STANDARDS.md`, `.claude/lab-template.md`, and `.claude/script-template.md`. Detect the file extensions present in `$0/` and read the relevant `.claude/tech-standards/<lang>.md` files. These are the complete criteria you will apply.
 
 ## Arguments
 
@@ -22,195 +24,113 @@ You are the quality review phase of the "Anyone Can Code" lab creation pipeline.
 
 ## Setup
 
-Derive paths:
-- `LAB_DIR` = `$0/` (relative to repo root, e.g., `5.7/`)
-- `LAB_PREFIX` = `$0` (e.g., `5.7`)
+- `LAB_DIR` = `$0/`
+- `LAB_PREFIX` = `$0`
 
-Read all files in `LAB_DIR`:
-- `{LAB_PREFIX}-report.md`
-- `{LAB_PREFIX}-lab.md`
-- `{LAB_PREFIX}-script.md`
-- All `.py` and `.sh` files in `LAB_DIR`
-
-If the directory or any required file doesn't exist, stop and report what's missing.
+Read all files in `LAB_DIR`. If the directory or any required file (`{LAB_PREFIX}-lab.md`, `{LAB_PREFIX}-script.md`, `{LAB_PREFIX}-report.md`) doesn't exist, stop and report what's missing.
 
 ---
 
-## Component 1: Demo Code Quality
+## Pass 1: Demo Code + Script-Lab Alignment
 
-First, identify what tech stack this lab uses (look at file extensions and content).
+### 1a. Demo Code Quality
 
-**For each `.sh` file:**
-```bash
-bash <filename> 2>&1; echo "Exit: $?"
-```
-- [ ] Exits with code 0 (no errors)
-- [ ] Has `#!/usr/bin/env bash` header
-- [ ] Has section banners with `═══` or `───` separators
-- [ ] Every command has a comment above it explaining what it does
-- [ ] Output is labeled so students know what each line means
+For each demo file, check language-specific rules from the relevant `.claude/tech-standards/*.md` file.
 
-**For each `.py` file:**
-```bash
-cd LAB_DIR && source .venv/bin/activate && python3.12 <filename> 2>&1; echo "Exit: $?"
-```
-- [ ] Exits with code 0 (no errors)
-- [ ] Zero warnings (no DeprecationWarning, InsecureKeyLengthWarning, etc.)
-- [ ] Has shebang `#!/usr/bin/env python3` and a header docstring with `Run: python3.12 <filename>`
-- [ ] Section banners present: `# ───` style AND `print("=" * 70)` + section title print
-- [ ] No `datetime.utcnow()` — must use `datetime.now(timezone.utc)`
-- [ ] If PyJWT: SECRET key is exactly 32 bytes
-- [ ] If bcrypt: password inputs are `b"..."` bytes, not `"..."` str
-- [ ] Every `print()` line is labeled
+**Universal checks for all demo files:**
+- Exits with code 0 — run it and capture stdout+stderr
+- Zero warnings or errors on run
+- Has a file header explaining what it is and how to run it
+- Has 3–4 sections with clear section banners
+- Every output line is labeled
+- Last section is a practical contrast or demonstration
+- Section structure is present
 
-**For each `.ts` / `.js` / Node.js file:**
-```bash
-cd LAB_DIR && npx ts-node <filename> 2>&1; echo "Exit: $?"  # or node <file>.js
-```
-- [ ] Exits with code 0
-- [ ] Zero unhandled errors/warnings
-- [ ] Header comment with `Run:` instruction
-- [ ] Section banners using `console.log("=".repeat(60))` + section title
-- [ ] All console output is labeled
+**Run each file:**
+- `.sh`: `bash <filename> 2>&1; echo "Exit: $?"`
+- `.py`: `cd $0 && source .venv/bin/activate && python3.12 <filename> 2>&1; echo "Exit: $?"`
+- `.ts`/`.js`: `cd $0 && npx ts-node <filename> 2>&1; echo "Exit: $?"`
+- `Dockerfile`: `docker build -t test-lab . 2>&1; echo "Exit: $?"`
+- Kubernetes YAML: `kubectl apply -f <file> --dry-run=client 2>&1; echo "Exit: $?"`
 
-**For Next.js / full-stack apps:**
-```bash
-cd LAB_DIR && npm run build 2>&1; echo "Exit: $?"
-```
-- [ ] Build succeeds with no TypeScript errors
-- [ ] No ESLint errors
-- [ ] Components use shadcn/ui + Tailwind (no inline styles unless intentional)
+Apply all rules from the matching `.claude/tech-standards/<lang>.md` to each file.
 
-**For Docker/Kubernetes files:**
-- [ ] `Dockerfile` builds: `docker build -t test-lab .`
-- [ ] `docker-compose.yaml` or `compose.yaml` starts cleanly: `docker compose up -d`
-- [ ] Kubernetes YAML applies: `kubectl apply -f deployment.yaml --dry-run=client`
-- [ ] Config files (nginx.conf, etc.) validated if tool is available
-
-**For all files regardless of type:**
-- [ ] Every output/log line is labeled — students must know what each line means
-- [ ] Section structure is present (3–4 sections per demo file)
-- [ ] Last section is a practical contrast/demonstration (not just setup)
-
----
-
-## Component 2: Script ↔ Lab Alignment
-
-The script IS the solution to the lab. The student follows the lab; the instructor follows the script. They must match exactly.
+### 1b. Script ↔ Lab Alignment
 
 Read both `{LAB_PREFIX}-lab.md` and `{LAB_PREFIX}-script.md`.
 
-Check:
-- [ ] Every `## Part N` in the lab has a corresponding `## PART N` section in the script
-- [ ] Every `### What is X?` section in the lab has corresponding **SPEAK** + **EXPLAIN** beats in the script covering the same concept
-- [ ] Every `### Run the demo` in the lab (with a `python3.12 <file>` command) has a corresponding **TYPE** + **OUTPUT** + **EXPLAIN** beat sequence in the script
-- [ ] For labs with lesson code (Python, TypeScript, OR bash demo scripts students need to understand): a `{LAB_PREFIX}-code-walkthrough.md` exists as a separate file
-- [ ] The code walkthrough uses `code [filename]` (VS Code) — NOT `cat`, `less`, or any terminal file display
-- [ ] The code walkthrough has a **conceptual section BEFORE the code** that explains the *why* from first principles — every term used in the code is defined conceptually before the code section that uses it (e.g., "what is a salt?" explained before the gensalt() line appears)
-- [ ] The lab references the walkthrough with a short note only — no inline code explanations
-- [ ] **Exempt:** infrastructure run as a black box (provided servers, Docker images), reused prior-lab code
-- [ ] Every exercise in the lab (under `### Exercise`) has a corresponding **TYPE** beat in the script showing the solution code, followed by **OUTPUT** showing the result
-- [ ] No script section covers something not present in the lab
-- [ ] No lab section is missing from the script
-- [ ] Script has a `## INTRO` section covering setup (venv + install)
-- [ ] Script has `## PUTTING IT TOGETHER` section
-- [ ] Script has `## OUTRO` section
-- [ ] Script has `## Recording notes` section at the end
-- [ ] Every beat in the script is labeled: **SPEAK**, **TYPE**, **OUTPUT**, or **EXPLAIN** — no unlabeled prose
+- [ ] Every `## Part N` in the lab has a matching `## PART N` section in the script
+- [ ] Every exercise in the lab has a TYPE + OUTPUT beat in the script showing the solution
+- [ ] Every run-the-demo block in the lab has a corresponding TYPE + OUTPUT + EXPLAIN sequence in the script
+- [ ] Every beat in the script is labeled SPEAK / TYPE / OUTPUT / EXPLAIN — no unlabeled prose
+- [ ] Script has INTRO, PUTTING IT TOGETHER, OUTRO, and Recording notes sections
+
+**Code walkthrough check:**
+For each demo file, determine: is this *lesson code* (students need to understand it) or *infrastructure* (run as a black box)?
+
+For lesson code:
+- [ ] `{LAB_PREFIX}-code-walkthrough.md` exists
+- [ ] Walkthrough opens files with `code [filename]` (VS Code) — not `cat` or `less`
+- [ ] Walkthrough has a conceptual section BEFORE any code sections — every term the code uses is defined before the code section that uses it
+- [ ] All EXPLAIN beats have: parenthetical `(lines N–M — description)`, fenced code block in the application language, line-number-specific narration
+
+Exempt: infrastructure run as a black box, code reused unchanged from a prior lab, shell-only labs.
 
 ---
 
-## Component 3: Course Overlap
+## Pass 2: Lab + Report Content Quality
 
-Read all other lab directories in the repo (use Glob: `*/` pattern, exclude `.claude/` and `.venv/`).
-
-For each other lab that exists:
-- Read its `{id}-lab.md` (if present)
-- Compare concepts, terminology, and demo patterns
-
-Check:
-- [ ] Flag any concept covered in this lab that is already thoroughly covered in another lab (report: "Concept X also appears in Lab Y — consider a cross-reference instead of re-explaining")
-- [ ] Flag any prerequisite mentioned in `Setup` → Prerequisites that doesn't correspond to an existing lab directory (report: "Prereq 'Lab Z' referenced but directory Z/ does not exist")
-- [ ] Flag any terminology inconsistency (e.g., this lab calls it "access token" but another lab calls the same thing "bearer token")
-
-If no other labs exist yet, report: "No other labs to compare against — overlap check skipped."
-
----
-
-## Component 4: Lab Structure and Necessity Review
+### 2a. Lab Structure and Interactivity
 
 Read `{LAB_PREFIX}-lab.md`.
 
-**Structure checks:**
-- [ ] Has header with: Section name, Prerequisites, Time estimate, Files
-- [ ] Has `## What you'll build` with a numbered list of concrete outcomes
-- [ ] Has `## Setup` with the correct setup commands for this lab's tech stack (uv+Python, npm+Node, Docker pull, or brew install for CLI tools)
-- [ ] Two-terminal setup note present IF any demo requires two simultaneous processes (server + client)
-- [ ] Every `## Part N` has at least one `### Exercise` subsection
-- [ ] Every exercise has a `<details><summary>Solution` collapsible block
-- [ ] Has `## Putting it together` section
-- [ ] Has `## Checklist` section with checkboxes
-- [ ] Has `## Further Reading` with at least 3 links
-
-**Code walkthrough check:**
-For each demo file in the lab, determine: is this file the *lesson* (code students need to understand), or *infrastructure* (run as a black box)?
-
-For lesson code (Python, TypeScript, OR bash scripts that ARE the lesson):
-- [ ] `{LAB_PREFIX}-code-walkthrough.md` exists as a separate file
-- [ ] Walkthrough opens files with `code [filename]` — NOT `cat`/`less`/terminal display
-- [ ] Walkthrough has conceptual sections BEFORE the code — every term the code uses is defined from first principles before the code section that uses it
-- [ ] Student lab has only a short reference note (NOT inline code walkthroughs)
-
-Exempt:
-- Infrastructure run as a black box (provided server, Docker image, startup script)
-- Code reused unchanged from a prior lab
-
-**Platform split check:**
-- [ ] Every CLI tool install command shows BOTH macOS (brew) and Linux/WSL (apt) side by side
-- [ ] Python (uv), npm, and Docker commands do NOT need platform splits (same on both)
-
-**Interactivity check:**
-- [ ] Every Part has at least one question that tests first-principles understanding — not flag trivia or syntax recall
-- [ ] Questions ask WHY something works, not WHAT flag to type
-- [ ] All questions have `<details><summary>Answer</summary>` collapsible answers
-- [ ] Flag: any question that could be answered by just re-reading the command (e.g., "what flag does X?") — these must be replaced with conceptual questions
+**Structure checks (follow `.claude/lab-template.md`):**
+- [ ] Header has Section, Prerequisites, Time, Files
+- [ ] Has `## What you'll build` with numbered concrete outcomes
+- [ ] Has `## Setup` with correct stack commands
+- [ ] Every `## Part N` has a `### What is X?` intro, run-the-demo block, conceptual question, and `### Exercise`
+- [ ] Every exercise has `<details><summary>Solution</summary>` collapsible block
+- [ ] Platform splits present for all CLI tool installs
+- [ ] Has `## Putting it together`, `## Checklist`, `## Further Reading` (≥3 links)
 
 **First-principles check (spot-check first 5 technical terms):**
-For the first 5 technical terms introduced (e.g., "hash function", "salt", "JWT", "bearer token", "authorization code"):
-- [ ] Each term is explained from first principles BEFORE being used as if already known
-- Report any term that appears without prior explanation
+For each of the first 5 technical terms introduced, verify it is explained from first principles before it's used as if already known. Flag any term that appears without prior definition.
 
-**Necessity review (ruthless):**
-For every Part, section, and paragraph, ask: is this absolutely required for the stated learning objectives?
+**Interactivity check (per `.claude/STANDARDS.md`):**
+- [ ] Every Part has ≥1 moment where the student types code or a command themselves
+- [ ] Every Part has ≥1 question testing WHY (not syntax recall or flag trivia)
+- [ ] All questions use `<details><summary>Answer</summary>` collapsible format
 
-Flag any of the following with a specific fix suggestion:
-- Paragraphs that repeat what was already said in a prior section
+**Necessity check (ruthless):**
+For every section and paragraph, ask: is this required to meet a stated learning objective?
+
+Flag with a specific fix:
+- Paragraphs that repeat content from a prior section
 - Exercises that test the same skill as a prior exercise without adding new understanding
-- Setup steps that aren't needed for the exercises that follow
-- "Background" sections that go deeper than what the exercise actually requires
-- Any section that could be cut without the student losing a learning objective
+- Sections that could be cut without the student losing a learning objective
 
-Goal: minimum content for maximum clarity. This lab should be tight.
-
----
-
-## Component 5: Report Quality
+### 2b. Report Quality
 
 Read `{LAB_PREFIX}-report.md`.
 
-Check:
-- [ ] Has `## Overview` section (2–3 paragraphs)
-- [ ] Has one `## N. Concept Name` section per major concept covered in the lab
-- [ ] Each concept section has: `### Background`, `### How it works`, `### Python library: <name>` subsections
-- [ ] Each concept section has a `**Sources:**` block with at least 3 URLs
-- [ ] All URLs are real (not invented — spot-check 2 URLs by looking at them critically)
-- [ ] Has `## Lab Design Decisions` section explaining key pedagogical choices
+- [ ] Has `## Overview` (2–3 paragraphs)
+- [ ] Has one section per major concept with Background, How it works, Implementation, and Sources (≥3 real URLs)
+- [ ] All URLs are real — spot-check at least 2
+- [ ] Has `## Lab Design Decisions` section
+
+### 2c. Course Overlap
+
+Use Glob to list all lab directories. For each other lab with an existing `-lab.md`:
+- [ ] Flag concepts covered in this lab that are already thoroughly explained elsewhere
+- [ ] Flag prerequisites referenced in Setup that don't have a corresponding lab directory
+
+If no other labs exist: "No other labs — overlap check skipped."
 
 ---
 
-## Create README.md
+## Write README.md
 
-After running all checks, write `LAB_DIR/README.md` with this content:
+After both passes, write `LAB_DIR/README.md`:
 
 ```markdown
 # Lab $0 — [TOPIC_TITLE]
@@ -219,72 +139,65 @@ After running all checks, write `LAB_DIR/README.md` with this content:
 
 ## Prerequisites
 
-[List prereqs from the lab file]
+[List from lab file]
 
 ## Setup
 
 ```bash
-cd [LAB_ID]
-# Python labs:
-uv venv .venv --python 3.12 && source .venv/bin/activate && uv pip install [packages]
-# Node.js labs:
-npm install
-# Docker labs:
-docker pull [image]:[tag]
-# Shell-only labs: brew install [tool] / apt install [tool]
+cd $0
+[exact setup commands for this lab's tech stack]
 ```
 
 ## Files
 
 | File | What it does | How to run |
 |------|-------------|------------|
-| `[filename].py` | [description] | `python3.12 [filename].py` |
-| `[filename].sh` | [description] | `bash [filename].sh` |
-| `[id]-lab.md` | Student lab handout | Open in editor |
-| `[id]-script.md` | Instructor recording script | Open in editor |
-| `[id]-report.md` | Research report and citations | Open in editor |
+| `[filename]` | [description] | `[run command]` |
+| `[LAB_PREFIX]-lab.md` | Student lab handout | Open in editor |
+| `[LAB_PREFIX]-script.md` | Instructor script | Open in editor |
+| `[LAB_PREFIX]-report.md` | Research report | Open in editor |
 
 ## Time
 
-~[N] minutes
+~N minutes
 
 ## Notes
 
-[Any special notes, e.g., "Part 3 requires two terminal windows simultaneously"]
+[Any special requirements, e.g., "Part 3 requires two terminal windows"]
 ```
 
 ---
 
 ## Report Format
 
-Return the full review report in this exact structure:
-
 ```
 # Review Report: Lab $0
 
-## Component 1: Demo Code Quality     [PASS / FAIL]
+## Pass 1: Demo Code + Alignment     [PASS / FAIL]
+
+### Demo Code
 - [PASS] hash_demo.py — exits 0, no warnings, all checks pass
-- [FAIL] jwt_demo.py — datetime.utcnow() on line 22 → fix: use datetime.now(timezone.utc)
+- [FAIL] jwt_demo.py — line 22: datetime.utcnow() → fix: use datetime.now(timezone.utc)
 
-## Component 2: Script ↔ Lab Alignment   [PASS / FAIL]
-- [PASS] All Parts match between lab and script
-- [FAIL] Exercise in Part 2 has no TYPE beat in script → add solution TYPE + OUTPUT after "### Exercise — Decode by hand"
+### Script ↔ Lab Alignment
+- [PASS] All Parts match
+- [FAIL] Exercise in Part 2 has no TYPE beat → add solution TYPE + OUTPUT after "### Exercise — Decode by hand"
 
-## Component 3: Course Overlap           [PASS / FAIL]
-- [PASS] No overlapping concepts with other labs
-- OR: [FLAG] "Hash function" concept also appears in Lab 4.5 — consider cross-reference
+## Pass 2: Lab + Report Quality      [PASS / FAIL]
 
-## Component 4: Lab Structure + Necessity   [PASS / FAIL]
+### Lab Structure and Interactivity
 - [PASS] All structural checks pass
-- [FAIL] Part 1 "Background" section (lines 45–62) repeats setup explanation from intro → cut lines 50–55
-- [CUT]  Section "Advanced bcrypt tuning" (lines 180–195) goes beyond lab objectives → recommend removing
+- [FAIL] Part 1 has no student-typing moment → add a REPL one-liner before the demo
+- [CUT]  Lines 180–195 go beyond lab objectives → recommend removing
 
-## Component 5: Report Quality           [PASS / FAIL]
+### Report Quality
 - [PASS] All checks pass
+
+### Course Overlap
+- [PASS] No overlapping concepts
 
 ---
 README.md written to $0/README.md
 ```
 
-If all components pass, end with: "All components PASS. Ready for commit."
-If any fail, end with: "Fix the FAIL items above, then re-run /review-lab $0."
+End with either "All components PASS. Ready for commit." or "Fix the FAIL items above, then re-run /review-lab $0."
