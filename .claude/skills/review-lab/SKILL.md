@@ -104,6 +104,9 @@ Check:
 - [ ] Every `## Part N` in the lab has a corresponding `## PART N` section in the script
 - [ ] Every `### What is X?` section in the lab has corresponding **SPEAK** + **EXPLAIN** beats in the script covering the same concept
 - [ ] Every `### Run the demo` in the lab (with a `python3.12 <file>` command) has a corresponding **TYPE** + **OUTPUT** + **EXPLAIN** beat sequence in the script
+- [ ] For labs with lesson code (Python/TypeScript files students need to understand): a `{LAB_PREFIX}-code-walkthrough.md` script file exists alongside `{LAB_PREFIX}-script.md`
+- [ ] The lab references the code walkthrough (e.g., "read through `hash_demo.py` before running — the code walkthrough video covers each function in detail") rather than including inline code explanations
+- [ ] **Exempt:** infrastructure files run as a black box (provided servers, Docker images, reused prior-lab code), shell-only labs where CLI flags are explained per-command
 - [ ] Every exercise in the lab (under `### Exercise`) has a corresponding **TYPE** beat in the script showing the solution code, followed by **OUTPUT** showing the result
 - [ ] No script section covers something not present in the lab
 - [ ] No lab section is missing from the script
@@ -146,6 +149,18 @@ Read `{LAB_PREFIX}-lab.md`.
 - [ ] Has `## Putting it together` section
 - [ ] Has `## Checklist` section with checkboxes
 - [ ] Has `## Further Reading` with at least 3 links
+
+**Code walkthrough check:**
+For each demo file in the lab, determine: is this file the *lesson* (code students need to understand), or *infrastructure* (a server/image they just run as a black box)?
+
+For lesson code:
+- [ ] A separate `{LAB_PREFIX}-code-walkthrough.md` file exists — a standalone instructor script that reads through the lesson code file(s) line by line, with SPEAK/TYPE/EXPLAIN beats
+- [ ] The student lab has a short note directing students to read the file or watch the code walkthrough video (NOT inline code blocks)
+- [ ] The code walkthrough script covers every key function/section of the lesson code file(s) with EXPLAIN beats that connect design choices to concepts
+
+Exempt from walkthrough:
+- Infrastructure students run as a black box (provided auth server, Docker images, reused prior-lab code)
+- Shell-only labs where CLI flags are already explained per-command
 
 **First-principles check (spot-check first 5 technical terms):**
 For the first 5 technical terms introduced (e.g., "hash function", "salt", "JWT", "bearer token", "authorization code"):

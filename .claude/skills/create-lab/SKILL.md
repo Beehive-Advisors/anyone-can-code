@@ -418,14 +418,27 @@ output from the demo to ground the explanation.]
 python3.12 [filename].py
 ```
 
-[Paste the output of Section A from OUTPUT_[filename] verbatim. After each section's output,
-explain what the student is looking at.]
+**Output (Section A):**
 
 ```
 [EXACT OUTPUT FROM PHASE 4 — paste verbatim]
 ```
 
 [Explanation of what each labeled line means.]
+
+**Code walkthrough reference (include when lesson code exists):**
+
+Do NOT include inline code walkthroughs in the student lab. Instead, add a short
+note directing the student to read the code or refer to the code walkthrough video:
+
+> "Before running this section, read through `[filename].py`. The code walkthrough
+> video covers each function in detail — follow it before running the demo."
+
+**Exempt — skip even this note when:**
+- The file is infrastructure students just run as a black box (provided demo server,
+  Docker image, pre-existing app)
+- Shell-only labs where CLI flags are already explained per-command
+- Code reused from a prior lab without modification
 
 ### Exercise
 
@@ -476,11 +489,69 @@ a command, not just read. Must build directly on what was just demonstrated.]
 
 ---
 
-## PHASE 7: Write Instructor Script
+## PHASE 7: Write Instructor Script(s)
 
-Write `$0/[LAB_ID]-script.md`.
+### When lesson code exists (Python, TypeScript demo files students need to understand):
 
-**Target length:** 600–800 lines.
+Write TWO script files:
+
+**File 1: `$0/[LAB_ID]-code-walkthrough.md`**
+This is a separate instructor script recorded as its own video segment — before the lab video. Its sole purpose is to walk through the lesson code file(s) line by line so students understand what they're about to run.
+
+Structure:
+```
+# Code Walkthrough Script — Lab $0: [TOPIC_TITLE]
+
+**Format:** Screencast — editor or terminal (cat/less)
+**Estimated recording time:** ~N min
+
+---
+
+## INTRO
+
+**SPEAK**
+> "Before we run the lab, let's read the code. Understanding how it's written
+> means you can write your own version. Open [filename].py and follow along."
+
+---
+
+## [filename].py — Section A: [description]
+
+**TYPE**
+```bash
+cat [filename].py
+```
+(or open in editor — show the relevant section)
+
+**EXPLAIN**
+> "[Line-by-line narration. What does this function do? Why bytes not strings?
+> Why this constant? What does this return? Connect design choices to the
+> concepts from the lecture.]"
+
+[Repeat for each section / key function in the file]
+
+---
+
+[Repeat for each lesson code file]
+
+## Recording notes
+
+- [Tips for pacing, scrolling, font size]
+```
+
+**File 2: `$0/[LAB_ID]-script.md`**
+The regular lab script — runs the demos, walks through output, covers exercises.
+This is the second video, recorded AFTER the code walkthrough video.
+
+**Target length for each:** code-walkthrough.md 200–400 lines; script.md 500–700 lines.
+
+### When NO lesson code exists (shell-only labs):
+
+Write only `$0/[LAB_ID]-script.md`. No code walkthrough file needed.
+
+---
+
+### `[LAB_ID]-script.md` — non-negotiable beat format:
 
 ### Non-negotiable beat format:
 
@@ -598,7 +669,9 @@ python3.12 [filename].py
 *(Your [value] will look different — structure is the same.)*
 
 **EXPLAIN**
-> "[Walk through the output. Reference specific labeled fields. Connect to the SPEAK explanation.]"
+> "[Walk through the output. Reference specific labeled fields. Connect to what
+students just saw in the code: 'that line printed the value of X that we saw
+defined on line N'.]"
 
 [Continue with OUTPUT + EXPLAIN pairs for each remaining section of the demo output]
 
@@ -689,6 +762,7 @@ Read both `$0/$0-lab.md` and `$0/$0-script.md`.
 - Every output shown to students in lab has a corresponding OUTPUT beat in script
 - Every SPEAK beat in script covers a concept introduced in the lab
 - Every beat in script is labeled SPEAK/TYPE/OUTPUT/EXPLAIN — no unlabeled prose
+- For labs with lesson code (Python/TypeScript files students need to understand): a `{id}-code-walkthrough.md` exists as a separate instructor script with SPEAK/TYPE/EXPLAIN beats reading through the code; the student lab has a short note referencing it (NOT inline code blocks). Exempt: infrastructure files (provided servers, Docker images, reused prior-lab code), shell-only labs.
 
 **Component 3: Course Overlap**
 Use Glob to list all `*/` directories. For each other lab, read its lab `.md` if present.
