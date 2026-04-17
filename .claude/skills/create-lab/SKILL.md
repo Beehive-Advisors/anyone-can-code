@@ -40,7 +40,7 @@ pattern: $0/*.md
 If any `.md` files are found, stop immediately:
 > "Lab `$0` already exists with existing `.md` files. Delete `$0/` first or choose a different section ID."
 
-**Step 2: Read the syllabus**
+**Step 2: Read the syllabus and coverage registry**
 
 Read `SYLLABUS.md`. Find the entry for section `$0`. Extract:
 - `TOPIC_TITLE` — the topic name (e.g., "Rate Limiting and Throttling")
@@ -48,6 +48,8 @@ Read `SYLLABUS.md`. Find the entry for section `$0`. Extract:
 - `PREREQUISITES` — any prerequisite labs mentioned
 
 If the section is not found, stop and ask the user for the topic title and learning objectives.
+
+Read `LAB_COVERAGE.md` if it exists. Store the full contents as `EXISTING_COVERAGE`. If the file does not exist, set `EXISTING_COVERAGE` to `""` (empty string).
 
 **Step 3: Proceed**
 
@@ -65,12 +67,18 @@ Spawn with:
 - `prompt`:
 
 ---
-**[AGENT PROMPT — substitute actual values for $0, TOPIC_TITLE, LEARNING_OBJECTIVES]**
+**[AGENT PROMPT — substitute actual values for $0, TOPIC_TITLE, LEARNING_OBJECTIVES, EXISTING_COVERAGE]**
 
 You are researching "[TOPIC_TITLE]" for Lab $0 of the "Anyone Can Code" beginner programming course. The audience is non-technical adults learning to code for the first time — they know basic programming but nothing about [TOPIC_TITLE].
 
 Learning objectives:
 [LEARNING_OBJECTIVES]
+
+## Already-covered concepts (do NOT re-teach these)
+
+The following concepts, tools, and exercises have been covered in prior labs. Your research should design this lab's content to be distinct — do not repeat these as primary teaching points. Incidental reinforcement is fine; full re-explanation is not.
+
+[EXISTING_COVERAGE — paste full LAB_COVERAGE.md contents here, or "None — this is the first lab." if EXISTING_COVERAGE is empty]
 
 Use WebSearch and WebFetch to research every concept. For EACH concept, produce:
 
@@ -302,6 +310,55 @@ You are reviewing Lab $0 of the "Anyone Can Code" course. Read all files in `$0/
 
 ---
 
+## PHASE 7.5: Update Lab Coverage Registry
+
+Read `$0/[LAB_ID]-lab.md` and `$0/[LAB_ID]-report.md`. Extract:
+- **Concepts Taught** — the core concepts each Part introduced (from the `### What is X?` sections and report)
+- **Tools and Commands Demonstrated** — every CLI flag, function, or API method shown in the demo files and exercises
+- **External Services Used** — any external hosts or services the demo files connect to (with protocol and port if non-standard)
+- **Student Exercises** — one-line summary of each exercise (from `### Exercise` sections)
+
+Then append to `LAB_COVERAGE.md` (or create it with the header if it doesn't exist):
+
+```markdown
+## Lab $0 — [TOPIC_TITLE]
+
+**Status:** Draft
+**Completed:** [today's date]
+
+### Concepts Taught
+- [concept 1]
+- [concept 2]
+...
+
+### Tools and Commands Demonstrated
+- `[command or flag]` — [what it does]
+...
+
+### External Services Used
+- `[host]` ([protocol, port]) — [purpose]
+...
+
+### Student Exercises
+1. [one-line description]
+2. [one-line description]
+...
+```
+
+Use the Write tool to append to `LAB_COVERAGE.md`. If the file does not exist, create it with this header first:
+
+```markdown
+# Lab Coverage Registry
+
+This file tracks what each completed lab taught. The `create-lab` skill reads this before researching a new lab to avoid re-teaching covered concepts. The `review-lab` skill reads it to check for course overlap.
+
+**To approve a lab:** change its Status in `SYLLABUS.md` from `Draft` to `Approved`.
+
+---
+```
+
+---
+
 ## PHASE 8: Commit and Push
 
 ```bash
@@ -310,8 +367,35 @@ git remote -v
 Expected remote: `origin → git@github.com:Beehive-Advisors/anyone-can-code.git`
 If wrong: stop and report.
 
+Update `SYLLABUS.md` to set the Status for this lab to `Draft`:
+
+```bash
+python3.12 - <<'PYEOF'
+import sys
+LAB_ID = '$0'
+path = 'SYLLABUS.md'
+lines = open(path).read().splitlines()
+out = []
+changed = False
+for line in lines:
+    cols = [c.strip() for c in line.split('|')]
+    # cols[0] = '', cols[1] = Section, cols[2] = ID, cols[3] = Lecture Name, cols[4] = Format, cols[5] = Status, cols[6] = ''
+    if len(cols) >= 6 and cols[2] == LAB_ID and cols[4] == 'Lab' and cols[5] == '':
+        cols[5] = 'Draft'
+        line = '| ' + ' | '.join(cols[1:6]) + ' |'
+        changed = True
+    out.append(line)
+if not changed:
+    print('WARNING: Could not find empty-Status Lab row for', LAB_ID, '— update SYLLABUS.md manually')
+else:
+    print('SYLLABUS.md updated: Lab', LAB_ID, 'Status → Draft')
+open(path, 'w').write('\n'.join(out) + '\n')
+PYEOF
+```
+
 ```bash
 git add $0/
+git add LAB_COVERAGE.md SYLLABUS.md
 git status
 ```
 

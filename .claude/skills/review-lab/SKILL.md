@@ -120,11 +120,13 @@ Read `{LAB_PREFIX}-report.md`.
 
 ### 2c. Course Overlap
 
-Use Glob to list all lab directories. For each other lab with an existing `-lab.md`:
-- [ ] Flag concepts covered in this lab that are already thoroughly explained elsewhere
-- [ ] Flag prerequisites referenced in Setup that don't have a corresponding lab directory
+Read `LAB_COVERAGE.md` from the repo root. Find all sections for labs OTHER THAN `$0`.
 
-If no other labs exist: "No other labs — overlap check skipped."
+For each concept, tool, and exercise in the current lab (`{LAB_PREFIX}-lab.md`):
+- [ ] Check whether it is already listed as a primary teaching point in another lab's entry in `LAB_COVERAGE.md`
+- [ ] Report duplicates as **WARN** (not FAIL) — some reinforcement is intentional; full re-explanation of something already taught is not
+
+If `LAB_COVERAGE.md` does not exist or contains no other labs: "No prior lab coverage — overlap check skipped."
 
 ---
 
