@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Lab"
+  short_description: "Review a completed lab for quality and correctness"
+  default_prompt: "Use $review-lab to review section <id> in this repo, list findings first, and rewrite README.md if the lab passes."

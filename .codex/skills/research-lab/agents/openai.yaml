@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Lab"
+  short_description: "Research a lab topic and produce a structured dump"
+  default_prompt: "Use $research-lab to research section <id> in this repo and return a full research dump with sources."

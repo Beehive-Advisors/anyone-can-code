@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Lab"
+  short_description: "Create a full Anyone Can Code lab from a section id"
+  default_prompt: "Use $create-lab to build a complete Anyone Can Code lab for section <id> in this repo."
