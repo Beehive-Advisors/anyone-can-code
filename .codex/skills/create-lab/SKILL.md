@@ -243,7 +243,7 @@ docker run --rm ubuntu:22.04 bash -c "apt-get update -qq && apt-get install -y -
 
 Note: Docker on macOS runs in a Linux VM, not bare metal. `lsmem` and `lsblk` may return reduced output inside containers because sysfs memory/block topology is not fully exposed. Always prefer the pod.
 
-**macOS-native commands** (`sysctl`, `diskutil`, `vm_stat`) run directly in the local shell without a pod.
+**macOS-native commands** (`sysctl`, `diskutil`, `vm_stat`) run directly in the local shell without a pod. If the lab includes macOS callout boxes, run every macOS command locally and store each output as `OUTPUT_macos_partN_cmdM`. These outputs are treated the same as Linux outputs — verbatim in all callout OUTPUT blocks. A macOS callout that shows only commands with no output violates the "never invent output" rule just as much as a Linux block without output.
 
 ---
 
@@ -339,6 +339,7 @@ Key reminders:
 - Every Part has a conceptual question testing WHY (see `.codex/skills/.anyone-can-code-common/STANDARDS.md` for good/bad examples)
 - Platform splits for any CLI tool installs
 - All output blocks use verbatim Phase 3 captures (by-file for scaffolded labs, by-command for direct-typing labs)
+- **macOS callout boxes** must also show verbatim Phase 3 outputs (`OUTPUT_macos_partN_cmdM`) — not commands-only blocks. Each macOS command in a callout gets its own output block, same as Linux commands in the main demo.
 
 ---
 
