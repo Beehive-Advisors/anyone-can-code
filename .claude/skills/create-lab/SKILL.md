@@ -213,6 +213,41 @@ Universal rules (all languages):
 
 **This phase is critical.** Scripts and labs use actual tested output. Never proceed to Phase 4 until all tests pass.
 
+### Linux Testing Environment
+
+Many labs use Linux-specific commands (`lscpu`, `lsmem`, `lsblk`, `xxd`, `/proc/*`, `/sys/*`, etc.). These do not exist on macOS. You must capture output from a real Linux host — never invent it, never approximate from macOS equivalents.
+
+**Preferred: Kubernetes pod (real x86_64 Linux hardware)**
+
+The cluster node `carlo` runs k0s on bare-metal x86_64 hardware. Output from this pod matches what students see on their own Linux VMs or WSL instances.
+
+```bash
+# 1. Create a clean Ubuntu pod
+kubectl run lab-capture --image=ubuntu:22.04 --restart=Never -- sleep 600
+kubectl wait --for=condition=Ready pod/lab-capture --timeout=60s
+
+# 2. Install tools the lab needs (adjust package list per lab)
+kubectl exec lab-capture -- bash -c "apt-get update -qq && apt-get install -y -qq util-linux xxd python3"
+
+# 3. Run each command and capture output
+kubectl exec lab-capture -- bash -c "[command]"
+
+# 4. Clean up when all output is captured
+kubectl delete pod lab-capture
+```
+
+**Fallback: Docker (only if cluster is unavailable)**
+
+```bash
+docker run --rm ubuntu:22.04 bash -c "apt-get update -qq && apt-get install -y -qq util-linux xxd python3 2>/dev/null && [command]"
+```
+
+Note: Docker on macOS runs in a Linux VM, not bare metal. `lsmem` and `lsblk` may return reduced output inside containers because sysfs memory/block topology is not fully exposed. Always prefer the pod.
+
+**macOS-native commands** (`sysctl`, `diskutil`, `vm_stat`) run directly in the local shell without a pod.
+
+---
+
 Two modes, per `SCAFFOLDING_REQUIRED`:
 
 **Scaffolded labs — run each demo file:**
@@ -407,6 +442,13 @@ git remote -v
 Expected remote: `origin → git@github.com:Beehive-Advisors/anyone-can-code.git`
 If wrong: stop and report.
 
+**Detect the current branch** — the lab may be created in a worktree on a feature branch, not on `main`:
+
+```bash
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+echo "Current branch: $CURRENT_BRANCH"
+```
+
 Update `SYLLABUS.md` to set the Status for this lab to `Draft`:
 
 ```bash
@@ -443,12 +485,12 @@ If `.venv` appears in staged files: `git rm -r --cached $0/.venv`
 
 ```bash
 git commit -m "Add Lab $0: [TOPIC_TITLE]"
-git push origin main
+git push origin $CURRENT_BRANCH
 ```
 
-If push is rejected (non-fast-forward): report the error and tell the user to `git pull --rebase origin main`. Do not force-push.
+If push is rejected (non-fast-forward): report the error and tell the user to `git pull --rebase origin $CURRENT_BRANCH`. Do not force-push.
 
-Print the full push output. On success: `"Lab $0 committed and pushed. Done."`
+Print the full push output. On success: `"Lab $0 committed and pushed to $CURRENT_BRANCH. Done."`
 
 ---
 
