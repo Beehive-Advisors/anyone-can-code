@@ -18,7 +18,8 @@ Write for clarity:
 - Keep all Codex skill material under `.codex/skills/`.
 - Use current browsing for research. Prefer primary sources.
 - Do not use subagents unless the user explicitly asked for delegation.
-- Do not commit or push unless the user explicitly asked for git actions.
+- For `create-lab`, commit and push by default after review passes and registry files are updated.
+- Validate the `origin` remote before pushing and never force-push.
 - Never invent output. Run the commands and capture it.
 
 ## Scaffolding Test

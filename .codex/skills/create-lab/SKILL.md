@@ -77,8 +77,12 @@ Follow the shared reference docs exactly for structure, pedagogy, and formatting
 
 ### 7. Git Rules
 
-- Do not commit, amend, or push unless the user explicitly asked for git actions.
-- If the user did ask for git actions, stage only the new lab files and the intentional registry updates.
+- Commit and push by default after the lab passes review.
+- Validate `origin` before pushing. Expected remote: `git@github.com:Beehive-Advisors/anyone-can-code.git`
+- Stage only the new lab files, the intentional registry updates, and any repo-owned Codex skill files that were deliberately changed for the workflow.
+- Use a normal commit on the current branch. Do not amend unless the user explicitly asks.
+- Do not force-push.
+- If push is rejected because the branch is behind, stop and report the exact error.
 
 ## Output Expectations
 
