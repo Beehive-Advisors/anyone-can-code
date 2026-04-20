@@ -2,10 +2,10 @@
 
 Strict formatting rules for all instructor script files. For pedagogical principles, see `STANDARDS.md`.
 
-There are two script file types:
+There are two possible script file types. The second is **conditional on the scaffolding test** (see `STANDARDS.md`):
 
-1. **`[ID]-code-walkthrough.md`** — VS Code editor walkthrough (recorded before the lab video). Required whenever the lab has demo code students need to understand, not just run.
-2. **`[ID]-script.md`** — Terminal screencast (recorded after the code walkthrough video).
+1. **`[ID]-script.md`** — Terminal screencast shooting script. **Always written.**
+2. **`[ID]-code-walkthrough.md`** — VS Code editor walkthrough (recorded before the terminal screencast). **Written only when the lab has scaffolding** (i.e., `.sh` / `.py` / `.ts` / Dockerfile / etc. demo files exist). A lab without demo files has nothing to walk through — skip this file entirely. Labs without scaffolding produce only the terminal script.
 
 ---
 

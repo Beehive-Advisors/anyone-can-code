@@ -84,6 +84,7 @@ After researching all concepts, produce a recommendation:
 - Are any concepts demonstrable with stdlib or shell only (no dependencies)?
 - What's the minimum viable demo that delivers the key insight for each concept?
 - Any platform considerations for macOS vs. Linux/WSL students?
+- **Does this lab require scaffolding?** Apply the scaffolding test in `STANDARDS.md`. Answer yes or no with explicit reasoning. If yes, list the specific demo files you recommend writing and explain why each cannot be typed directly in the terminal (loops, state, multi-file setup, etc.). If no, sketch the sequence of terminal commands that will replace scaffolding in each Part. Default to no — most exploratory labs can be done entirely in the terminal.
 
 ---
 
@@ -133,6 +134,22 @@ Return the full research dump in this structure. Do not truncate — this will b
 
 ## Concept 2: [Name]
 [same structure]
+
+---
+
+## Scaffolding Decision
+
+**Required:** Yes / No
+
+**Reasoning:** [Apply the scaffolding test from STANDARDS.md. Explain the decision in 2–4 sentences.]
+
+**If Yes — demo files to write:**
+- `[filename.ext]` — [what it demonstrates, why it cannot be typed live]
+
+**If No — command sequence that replaces scaffolding:**
+- Part 1: [sketch of commands the student will type]
+- Part 2: [sketch of commands the student will type]
+- Part 3: [sketch of commands the student will type]
 
 ---
 

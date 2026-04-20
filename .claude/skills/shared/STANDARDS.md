@@ -29,14 +29,45 @@ Every lab produces something concrete. Outcomes are stated as actions: "I hashed
 
 ---
 
+## The scaffolding test
+
+Default to direct-terminal typing. A lab should ship demo files (`.sh` / `.py` / `.ts` / `Dockerfile` / etc.) **only** when the demo cannot reasonably be typed command-by-command into the terminal.
+
+A lab needs **scaffolding** when at least one of these is true:
+- The demo is a multi-step program with loops, functions, or state
+- The demo requires multi-file setup (Dockerfile, class hierarchy, config files, compose file)
+- Any single logical unit exceeds ~5 lines of code and would be tedious or error-prone to type live
+
+| Signal | No scaffolding needed | Scaffolding required |
+|--------|-----------------------|----------------------|
+| Commands per Part | 2–5 discrete one-liners | Single multi-line program |
+| Lines of code | None, or brief `python3.12 -c "..."` expressions | 10+ lines with control flow |
+| Files needed beyond lab markdown | None | One or more demo files |
+| Can a student reproduce it by typing? | Yes, comfortably | Only with significant risk of typos |
+
+**Consequences of the decision:**
+
+- **No scaffolding** → no `.sh` / `.py` / `.ts` demo files; students type every command directly into the terminal; `[ID]-code-walkthrough.md` is NOT written (there is nothing to walk through); `[ID]-script.md` is the only instructor asset.
+- **Scaffolding required** → write the demo files; `[ID]-code-walkthrough.md` IS written; students still type commands themselves when practical, and the scripts are a reference implementation.
+
+Lab 1.5 ("Seeing the Machine") is the canonical example of *no scaffolding needed* — every demo is a single-line `sysctl` / `xxd` / `python3.12 -c "..."` command the student types live. A lab like "Build a TCP server in 30 lines of Python" is the canonical example of *scaffolding required* — the student cannot reasonably type 30 lines correctly on the first try.
+
+The research phase of `/create-lab` is responsible for making this call explicitly and carrying it into the rest of the pipeline.
+
+---
+
 ## Interactivity — First-Class Requirement
 
 Interactivity is not optional. Every Part of a lab must include both:
 
-**1. Student types code or a command themselves.**
-Not just runs a pre-written script. Acceptable forms: a one-liner in a REPL, a `curl` command they type manually, a short code block they write and run as part of an exercise. Pre-written demo scripts are fine *after* the student has typed something first.
+**1. Student types commands directly into the terminal.**
+
+Direct-terminal typing is the primary form of interactivity, not a fallback. In a no-scaffolding lab this means every Part has ≥2 discrete command blocks the student types themselves, each with its own labeled output. `bash demo.sh` abstraction is not acceptable as the student's primary action in this mode.
+
+In a scaffolded lab, the student may run the demo file *after* typing at least one command themselves (a warm-up one-liner in the REPL, a `curl` probe, a `docker ps`, etc.). Running a pre-written script is never the only interactive moment in a Part.
 
 **2. A conceptual question testing WHY.**
+
 Not syntax recall or flag trivia. The question requires the student to reason through the concept.
 
 Good: *"Why would the server wait forever if you don't send the blank line?"*
@@ -64,7 +95,9 @@ Format questions with a collapsible answer:
 
 ## Demo Code Standards
 
-Regardless of language, every demo file must:
+These rules apply **only to labs that require scaffolding** (see "The scaffolding test" above). Labs without demo files have nothing in this section to satisfy — the terminal commands and their captured outputs in the lab file take the place of demo files.
+
+When a lab requires scaffolding, every demo file must:
 
 - Have a header comment explaining what it is and how to run it
 - Have 3–4 sections with clear section banners
@@ -89,10 +122,16 @@ All source URLs must be real — taken from actual research, never invented.
 
 ## README Standards
 
-Each completed lab directory gets a `README.md` containing:
-- 1–2 sentence description
-- Prerequisites
-- Exact setup commands
-- File table: filename → description → how to run
-- Time estimate
-- Notes for any special requirements (e.g., two terminal windows)
+Each completed lab directory gets a `README.md` that serves as an **instructor-only navigation aid**. It is not distributed to students — the student handout is `[ID]-lab.md`.
+
+The README exists so an instructor opening the folder for the first time knows immediately which files to give to students and which to keep internal. It must NOT duplicate anything already in the lab file — no prerequisites, no setup commands, no time estimate, no "how to run" flags.
+
+Content (exactly these two sections, nothing more):
+
+1. **File-audience table.** One row per file in the lab folder. Columns:
+   - `File` — the filename
+   - `Audience` — one of `Student`, `Instructor`, `Both`
+   - `Purpose` — one concise sentence (e.g., "Lab handout distributed to learners", "Terminal screencast shooting script", "Reference scaffolding code")
+2. **Recording order.** One bullet: record the walkthrough first (if present), then the terminal screencast.
+
+Always add a one-line note at the top marking the file as instructor-only (not distributed to students). Omit rows for files that don't exist — for example, a no-scaffolding lab has no demo files and no `[ID]-code-walkthrough.md`, so those rows are absent.

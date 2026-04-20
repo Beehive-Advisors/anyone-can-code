@@ -2,6 +2,8 @@
 
 Strict formatting rules for all student lab files (`[ID]-lab.md`). Follow these exactly. Do not add sections not listed here. Do not reorder sections. For pedagogical principles, see `STANDARDS.md`.
 
+**Before writing the lab, decide whether it requires scaffolding** (see "The scaffolding test" in `STANDARDS.md`). The decision changes how each Part's "Run the demo" subsection is formatted. Most hands-on exploratory labs should land on *no scaffolding* — students type individual commands in the terminal.
+
 ---
 
 ## File header (top of file)
@@ -12,8 +14,9 @@ Strict formatting rules for all student lab files (`[ID]-lab.md`). Follow these 
 **Section:** [Course section name]
 **Prerequisites:** [Comma-separated list, or "None"]
 **Time:** ~N minutes
-**Files:** `[ID]/`
 ```
+
+Add a `**Files:** \`[ID]/\`` line **only** when the lab has scaffolding (i.e., there are demo files in the folder beyond the markdown). No-scaffolding labs omit this line — there are no demo files to point at.
 
 ---
 
@@ -60,11 +63,24 @@ One Part per concept. Parts are numbered sequentially starting at 1.
 - Define every term before using it
 
 **2. Run the demo**
-- Exact command to run
+
+The format depends on whether the lab has scaffolding (see `STANDARDS.md`).
+
+**Direct-typing mode (no scaffolding — no demo files):**
+Break this subsection into **2–4 discrete command blocks**. Each block is the smallest self-contained step a student types and observes. Per block:
+- One framing sentence: what the student is about to do and why
+- A fenced code block containing the exact command for the student to type
+- An `**Output:**` heading followed by the verbatim output block (captured from a real tested run)
+- 1–2 sentences tying that command's output to the concept
+
+Do not collapse this into `bash demo.sh` + one giant output. The student should type every command themselves and see each result before moving to the next. This is the primary form of interactivity in no-scaffolding labs.
+
+**Scaffolded mode (lab has demo files):**
+- Exact command to run the demo file (e.g., `bash demo.sh` or `python3.12 demo.py`)
 - `**Output (Section X):**` heading
 - Verbatim output block (never invented — from tested run)
 - 1–3 sentences explaining what each labeled output line means
-- If lesson code exists: one sentence directing students to the code walkthrough video
+- One sentence directing students to the code walkthrough video before continuing
 
 **3. Conceptual question**
 - One question testing WHY, not syntax recall

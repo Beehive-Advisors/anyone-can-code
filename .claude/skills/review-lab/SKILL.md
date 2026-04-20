@@ -33,9 +33,19 @@ Read all files in `LAB_DIR`. If the directory or any required file (`{LAB_PREFIX
 
 ## Pass 1: Demo Code + Script-Lab Alignment
 
-### 1a. Demo Code Quality
+**First, determine the scaffolding mode for this lab.**
 
-For each demo file, check language-specific rules from the relevant `.claude/skills/shared/tech-standards/*.md` file.
+Use `Glob` to check for demo files in `LAB_DIR` matching `*.sh`, `*.py`, `*.ts`, `*.js`, `Dockerfile`, `*.yaml`, `*.yml`. Store the result as `SCAFFOLDED` (boolean):
+- `SCAFFOLDED = true` if any such files exist
+- `SCAFFOLDED = false` if only markdown files exist
+
+The rest of Pass 1 branches on this.
+
+### 1a. Demo Code Quality — scaffolded labs only
+
+**If `SCAFFOLDED = false`:** skip this subsection — mark it `N/A (direct-typing lab — no demo files)` in the report and move to 1b.
+
+**If `SCAFFOLDED = true`:** for each demo file, check language-specific rules from the relevant `.claude/skills/shared/tech-standards/*.md` file.
 
 **Universal checks for all demo files:**
 - Exits with code 0 — run it and capture stdout+stderr
@@ -65,16 +75,23 @@ Read both `{LAB_PREFIX}-lab.md` and `{LAB_PREFIX}-script.md`.
 - [ ] Every beat in the script is labeled SPEAK / TYPE / OUTPUT / EXPLAIN — no unlabeled prose
 - [ ] Script has INTRO, PUTTING IT TOGETHER, OUTRO, and Recording notes sections
 
-**Code walkthrough check:**
-For each demo file, determine: is this *lesson code* (students need to understand it) or *infrastructure* (run as a black box)?
+### 1c. Scaffolding Consistency
 
-For lesson code:
+The lab's scaffolding mode must be internally consistent. FAIL the lab if not.
+
+**If `SCAFFOLDED = true`:**
 - [ ] `{LAB_PREFIX}-code-walkthrough.md` exists
 - [ ] Walkthrough opens files with `code [filename]` (VS Code) — not `cat` or `less`
 - [ ] Walkthrough has a conceptual section BEFORE any code sections — every term the code uses is defined before the code section that uses it
 - [ ] All EXPLAIN beats have: parenthetical `(lines N–M — description)`, fenced code block in the application language, line-number-specific narration
+- [ ] Each Part's "Run the demo" in the lab includes ≥1 student-typed command (not only `bash demo.sh`)
 
-Exempt: infrastructure run as a black box, code reused unchanged from a prior lab, shell-only labs.
+**If `SCAFFOLDED = false`:**
+- [ ] `{LAB_PREFIX}-code-walkthrough.md` does NOT exist. A direct-typing lab has nothing to walk through — its presence indicates leftover scaffolded-mode content that should be removed or converted.
+- [ ] Each Part's "Run the demo" in the lab contains ≥2 discrete TYPE+OUTPUT command pairs the student types individually — no `bash demo.sh` abstraction, no single collapsed dump
+- [ ] The lab's header block does NOT have a `**Files:**` line (there are no demo files to point at)
+
+Flag any violation as FAIL with the exact fix instruction.
 
 ---
 
@@ -85,7 +102,8 @@ Exempt: infrastructure run as a black box, code reused unchanged from a prior la
 Read `{LAB_PREFIX}-lab.md`.
 
 **Structure checks (follow `.claude/skills/shared/lab-template.md`):**
-- [ ] Header has Section, Prerequisites, Time, Files
+- [ ] Header has Section, Prerequisites, Time
+- [ ] Header has a `**Files:**` line **only if** `SCAFFOLDED = true` (direct-typing labs omit it)
 - [ ] Has `## What you'll build` with numbered concrete outcomes
 - [ ] Has `## Setup` with correct stack commands
 - [ ] Every `## Part N` has a `### What is X?` intro, run-the-demo block, conceptual question, and `### Exercise`
@@ -97,7 +115,9 @@ Read `{LAB_PREFIX}-lab.md`.
 For each of the first 5 technical terms introduced, verify it is explained from first principles before it's used as if already known. Flag any term that appears without prior definition.
 
 **Interactivity check (per `.claude/skills/shared/STANDARDS.md`):**
-- [ ] Every Part has ≥1 moment where the student types code or a command themselves
+- [ ] Every Part has the student typing commands directly in the terminal
+  - Direct-typing labs (`SCAFFOLDED = false`): every Part has ≥2 discrete student-typed TYPE+OUTPUT command pairs — never a single `bash demo.sh` abstraction
+  - Scaffolded labs (`SCAFFOLDED = true`): every Part has ≥1 student-typed command alongside or before the `bash demo.sh` / `python3.12 demo.py` run
 - [ ] Every Part has ≥1 question testing WHY (not syntax recall or flag trivia)
 - [ ] All questions use `<details><summary>Answer</summary>` collapsible format
 
@@ -132,41 +152,37 @@ If `LAB_COVERAGE.md` does not exist or contains no other labs: "No prior lab cov
 
 ## Write README.md
 
-After both passes, write `LAB_DIR/README.md`:
+After both passes pass, write `LAB_DIR/README.md`. The README is an **instructor-only navigation aid** — it is not distributed to students. Do NOT duplicate prerequisites, setup commands, time estimates, or "how to run" flags — those live in `[LAB_PREFIX]-lab.md`.
+
+Build the file-audience table dynamically from the files that actually exist in `LAB_DIR`. Omit rows for files that do not exist (no-scaffolding labs have no demo files and no code walkthrough).
+
+Template:
 
 ```markdown
-# Lab $0 — [TOPIC_TITLE]
+# Lab $0 — Instructor README
 
-[1–2 sentence description of what this lab covers and why it matters]
+> Instructor-only. Not distributed to students. See `$0-lab.md` for the student handout.
 
-## Prerequisites
+| File | Audience | Purpose |
+|------|----------|---------|
+| `$0-lab.md` | Student | Lab handout distributed to learners |
+| `$0-script.md` | Instructor | Terminal screencast shooting script |
+| `$0-report.md` | Instructor | Research background and sources |
+| `$0-code-walkthrough.md` | Instructor | VS Code walkthrough script |
+| `[demo-file-1]` | Both | Reference implementation — instructor runs during recording; students may run as an alternative to typing |
+| `[demo-file-2]` | Both | [one-sentence purpose] |
 
-[List from lab file]
+## Recording order
 
-## Setup
-
-```bash
-cd $0
-[exact setup commands for this lab's tech stack]
+- Record the code walkthrough first (if present), then the terminal screencast.
 ```
 
-## Files
+Row-inclusion rules:
+- `$0-lab.md`, `$0-script.md`, `$0-report.md` — always present
+- `$0-code-walkthrough.md` row — include **only if** the file exists (scaffolded labs)
+- One row per demo file — include **only** demo files actually present in `LAB_DIR`; no demo-file rows in a direct-typing lab
 
-| File | What it does | How to run |
-|------|-------------|------------|
-| `[filename]` | [description] | `[run command]` |
-| `[LAB_PREFIX]-lab.md` | Student lab handout | Open in editor |
-| `[LAB_PREFIX]-script.md` | Instructor script | Open in editor |
-| `[LAB_PREFIX]-report.md` | Research report | Open in editor |
-
-## Time
-
-~N minutes
-
-## Notes
-
-[Any special requirements, e.g., "Part 3 requires two terminal windows"]
-```
+Keep each `Purpose` cell to one short sentence. Do not include columns like "How to run" or "Size" — the file table is the student-vs-instructor navigation aid and nothing more.
 
 ---
 
@@ -175,9 +191,13 @@ cd $0
 ```
 # Review Report: Lab $0
 
+**Scaffolding mode:** direct-typing | scaffolded  (state which, based on files present)
+
 ## Pass 1: Demo Code + Alignment     [PASS / FAIL]
 
 ### Demo Code
+- [N/A] Direct-typing lab — no demo files
+(or)
 - [PASS] hash_demo.py — exits 0, no warnings, all checks pass
 - [FAIL] jwt_demo.py — line 22: datetime.utcnow() → fix: use datetime.now(timezone.utc)
 
@@ -185,11 +205,17 @@ cd $0
 - [PASS] All Parts match
 - [FAIL] Exercise in Part 2 has no TYPE beat → add solution TYPE + OUTPUT after "### Exercise — Decode by hand"
 
+### Scaffolding Consistency
+- [PASS] No demo files present and no code walkthrough — consistent direct-typing mode
+- [PASS] Each Part has ≥2 discrete student-typed command pairs
+(or)
+- [FAIL] 5.7-code-walkthrough.md exists but no demo files → delete the walkthrough (direct-typing lab) OR add the demo files it references (scaffolded lab)
+
 ## Pass 2: Lab + Report Quality      [PASS / FAIL]
 
 ### Lab Structure and Interactivity
 - [PASS] All structural checks pass
-- [FAIL] Part 1 has no student-typing moment → add a REPL one-liner before the demo
+- [FAIL] Part 1 has only a single `bash demo.sh` call → split into 2+ discrete TYPE+OUTPUT command pairs the student types live
 - [CUT]  Lines 180–195 go beyond lab objectives → recommend removing
 
 ### Report Quality

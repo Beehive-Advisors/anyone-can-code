@@ -15,7 +15,9 @@ allowed-tools: Read Write Edit Glob Grep Bash Agent WebSearch WebFetch
 
 You are building a complete lab for the "Anyone Can Code" Udemy course. This is a fully autonomous workflow — run all phases to completion without pausing for user confirmation unless something breaks.
 
-**Before writing any deliverable:** read `.claude/skills/shared/STANDARDS.md`, `.claude/skills/shared/lab-template.md`, and `.claude/skills/shared/script-template.md`. These are authoritative — follow them exactly. For any demo files you write, also read the relevant `.claude/skills/shared/tech-standards/<language>.md` file(s) for each language you use.
+**Default to direct-terminal typing.** Most labs do not need demo files (`.sh` / `.py` / `.ts`) — students learn more by typing individual commands themselves than by running pre-written scripts. Only produce demo files when the lab requires scaffolding (see "The scaffolding test" in `STANDARDS.md`). The research phase is responsible for making this call explicitly; every subsequent phase branches on it.
+
+**Before writing any deliverable:** read `.claude/skills/shared/STANDARDS.md`, `.claude/skills/shared/lab-template.md`, and `.claude/skills/shared/script-template.md`. These are authoritative — follow them exactly. For any demo files you write (only when scaffolding is required), also read the relevant `.claude/skills/shared/tech-standards/<language>.md` file(s) for each language you use.
 
 ## Arguments
 
@@ -108,7 +110,19 @@ Official documentation, RFC/spec if applicable, package page, well-known tutoria
 **6. Demo design**
 Suggest 3–4 sections for a demo file that shows intermediate values so students see the internals, not just the final result. What contrast or comparison would be most instructive?
 
-After all concepts, produce a **Lab Design Rationale**:
+After all concepts, produce a **Scaffolding Decision** and a **Lab Design Rationale**.
+
+**Scaffolding Decision** — apply the scaffolding test from `STANDARDS.md`:
+
+A lab requires scaffolding only when the demo cannot reasonably be typed command-by-command in the terminal — multi-step programs with loops/functions/state, multi-file setups (Dockerfile, class hierarchy), or single logical units exceeding ~5 lines of code.
+
+Default to no scaffolding. Produce:
+- **Required: Yes / No** (one word)
+- **Reasoning**: 2–4 sentences applying the test to this specific lab
+- **If Yes**: list the demo files to write and state, per file, why it cannot be typed live
+- **If No**: sketch the sequence of terminal commands that replaces scaffolding in each Part
+
+**Lab Design Rationale** — then cover:
 - What is the right tech stack for this lab and why?
 - Local demo vs. real external service?
 - Concepts demonstrable with stdlib/shell only?
@@ -130,6 +144,12 @@ Return the full research dump in structured markdown. Do not truncate.
 ## Concept 2: [Name]
 [same structure]
 
+## Scaffolding Decision
+**Required:** Yes / No
+**Reasoning:** ...
+**If Yes — demo files:** ...
+**If No — command sequence per Part:** ...
+
 ## Lab Design Rationale
 ```
 ---
@@ -141,25 +161,30 @@ Store the full return value as `RESEARCH_DUMP`. Do not proceed until the agent c
 
 ## PHASE 2: Scaffold
 
-Using `RESEARCH_DUMP` and `LEARNING_OBJECTIVES`, do all of the following in sequence:
+**Step 0: Read the scaffolding decision**
 
-**Step 1: Choose the technology stack**
+Parse the `## Scaffolding Decision` section from `RESEARCH_DUMP`. Store as `SCAFFOLDING_REQUIRED` (boolean).
+
+- **If `SCAFFOLDING_REQUIRED` is No:** this lab is direct-typing only. Create the directory (Step 3 below) but skip Steps 1, 2, 4, 5 entirely — there are no demo files to write. Extract the per-Part command sequence from the research dump's "If No — command sequence per Part" list and store as `COMMAND_PLAN`. Proceed to Phase 3.
+- **If `SCAFFOLDING_REQUIRED` is Yes:** run Steps 1–5 below to write the demo files.
+
+**Step 1: Choose the technology stack** (scaffolded labs only)
 
 Based on the topic and research, choose the most direct, least-abstracted tool. Use judgment from the research — there is no hardcoded decision table. Read `.claude/skills/shared/tech-standards/<language>.md` for each language you plan to use.
 
 Document your decision: "This lab uses [TECH STACK] because [REASON]."
 
-**Step 2: Plan the demo files**
+**Step 2: Plan the demo files** (scaffolded labs only)
 
 Name them descriptively (e.g., `{concept}_demo.py`, `{concept}_flow.sh`). Plan 3–4 sections per file and what each section will output.
 
-**Step 3: Create the directory**
+**Step 3: Create the directory** (always)
 
 ```bash
 mkdir -p $0
 ```
 
-**Step 4: Set up the runtime environment**
+**Step 4: Set up the runtime environment** (scaffolded labs only)
 
 - **Python:** `cd $0 && uv venv .venv --python 3.12 && source .venv/bin/activate && uv pip install [packages]`
 - **TypeScript/Node:** `cd $0 && npm init -y && npm install [packages]`
@@ -169,7 +194,9 @@ mkdir -p $0
 
 Stop if any install fails — report the exact error.
 
-**Step 5: Write the demo files**
+For **direct-typing labs**, the only environment work is verifying that the CLI tools the student will type are installed — no `.venv`, no `npm init`, no `pip install`.
+
+**Step 5: Write the demo files** (scaffolded labs only)
 
 Write each demo file using the `Write` tool. Follow `.claude/skills/shared/tech-standards/<language>.md` for all language-specific rules (headers, section banners, output labeling, known gotchas).
 
@@ -182,22 +209,33 @@ Universal rules (all languages):
 
 ---
 
-## PHASE 3: Test All Demo Files — Capture Exact Output
+## PHASE 3: Test the Demos — Capture Exact Output
 
-**This phase is critical.** Scripts and labs use actual tested output. Never proceed to Phase 4 until all demo files pass.
+**This phase is critical.** Scripts and labs use actual tested output. Never proceed to Phase 4 until all tests pass.
 
-Run each file:
+Two modes, per `SCAFFOLDING_REQUIRED`:
+
+**Scaffolded labs — run each demo file:**
 - Shell: `bash [filename].sh 2>&1`
 - Python: `cd $0 && source .venv/bin/activate && python3.12 [filename].py 2>&1`
 - TypeScript: `cd $0 && npx ts-node [filename].ts 2>&1`
 - Docker: `docker run [image] [command] 2>&1`
 - Multi-process: start server in background (`&`), run client, kill server
 
-**If exit code is not 0:** stop, read the error, fix with `Edit`, re-run. Never proceed with a failing file.
+Store each file's complete stdout as `OUTPUT_[filename]`.
 
-**Store each file's complete stdout as `OUTPUT_[filename]`.** This is the ground truth for Phases 4–5. Paste verbatim into all OUTPUT blocks — never paraphrase.
+**Direct-typing labs — run each command from `COMMAND_PLAN` individually:**
 
-For variable output (hashes, tokens, timestamps): paste the actual captured output, then note: `*(Your [value] will look different — structure is the same.)*`
+For each Part in the plan, execute every command in sequence, capturing the output of each. Store each pair as `OUTPUT_partN_cmdM`. These become the verbatim OUTPUT blocks in the lab file, one per discrete student-typed command. Typical shapes:
+- `sysctl -n hw.memsize` → one-line number
+- `xxd hello.txt` → a few lines
+- `python3.12 -c "print(ord('H'))"` → one-line result
+
+Do NOT collapse multiple commands into one wrapper script — the point of this lab's design is that the student types each command individually. Capture each output independently.
+
+**If exit code is not 0 (either mode):** stop, read the error, fix the command or file with `Edit`, re-run. Never proceed with a failing test.
+
+Paste each captured output verbatim into all lab/script OUTPUT blocks — never paraphrase. For variable output (hashes, tokens, timestamps): paste the actual captured output, then note: `*(Your [value] will look different — structure is the same.)*`
 
 ---
 
@@ -261,10 +299,12 @@ Follow `.claude/skills/shared/lab-template.md` exactly for section order, headin
 
 Key reminders:
 - First principles before jargon — start with the problem, not the solution name
-- Students must type in every Part (not just run a script)
+- Students must type commands directly in the terminal in every Part
+  - **Direct-typing labs:** each Part's "Run the demo" section is 2–4 discrete TYPE+OUTPUT command pairs the student types individually (no `bash demo.sh` wrapper)
+  - **Scaffolded labs:** `bash demo.sh` / `python3.12 demo.py` plus at least one student-typed command per Part
 - Every Part has a conceptual question testing WHY (see `.claude/skills/shared/STANDARDS.md` for good/bad examples)
 - Platform splits for any CLI tool installs
-- All output blocks use verbatim Phase 3 captures
+- All output blocks use verbatim Phase 3 captures (by-file for scaffolded labs, by-command for direct-typing labs)
 
 ---
 
@@ -272,15 +312,15 @@ Key reminders:
 
 Follow `.claude/skills/shared/script-template.md` exactly for beat format, section structure, and file naming.
 
-**When lesson code exists** (demo files students need to understand, not just run):
-Write TWO files:
-1. `$0/[LAB_ID]-code-walkthrough.md` — VS Code walkthrough recorded before the lab video
-2. `$0/[LAB_ID]-script.md` — terminal screencast recorded after
+The decision is purely the scaffolding test:
 
-**When no lesson code exists** (shell-only, infrastructure-only):
-Write only `$0/[LAB_ID]-script.md`.
+- **If `SCAFFOLDING_REQUIRED` is Yes:** write both files.
+  1. `$0/[LAB_ID]-code-walkthrough.md` — VS Code walkthrough recorded before the lab video
+  2. `$0/[LAB_ID]-script.md` — terminal screencast recorded after
 
-All OUTPUT blocks use verbatim Phase 3 captures. Never write invented output.
+- **If `SCAFFOLDING_REQUIRED` is No:** write only `$0/[LAB_ID]-script.md`. **Do NOT write a code walkthrough** — there is no code to walk through; the terminal script is the complete instructor asset.
+
+All OUTPUT blocks use verbatim Phase 3 captures. Never write invented output. In direct-typing labs, each captured `OUTPUT_partN_cmdM` maps to one TYPE+OUTPUT+EXPLAIN beat in the terminal script (not a single bulk output for the whole Part).
 
 ---
 
