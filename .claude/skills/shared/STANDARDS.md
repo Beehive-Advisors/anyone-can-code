@@ -1,6 +1,8 @@
 # Course Lab Standards
 
-All three lab skills — `create-lab`, `research-lab`, and `review-lab` — read and apply these standards. They represent the pedagogical principles and quality criteria that every lab must meet.
+These standards are the **canonical, agent-agnostic** course pedagogy. Both the Claude-native skills (under `.claude/skills/`) and the Codex-native skills (under `.codex/skills/`) apply the same semantic rules — audience, scaffolding test, dual-track layout, output discipline, interactivity. Agent-specific trees keep their own SKILL.md frontmatter and path conventions; the pedagogy does not diverge between them.
+
+All three lab skills — `create-lab`, `research-lab`, and `review-lab` — read and apply these standards.
 
 For language-specific rules (Python, shell, TypeScript, Docker), read the relevant file in `tech-standards/` based on the file extensions present in the lab.
 
@@ -29,6 +31,34 @@ Every lab produces something concrete. Outcomes are stated as actions: "I hashed
 
 ---
 
+## Cross-platform tracks — First-Class Requirement
+
+Every lab has **two parallel tracks** that coexist in the same `[ID]-lab.md` file:
+
+- 🍎 **macOS track** — the instructor's primary platform. Every command and captured output in this track comes from a tested macOS run.
+- 🐧 **Linux / WSL track** — for students on Ubuntu / WSL2. Commands are parallel translations of the macOS track; outputs follow the same structure but line counts, labels, and specific values differ. Linux output is captured from a real Linux environment (kubectl pod on the bare-metal k0s cluster is preferred; Docker Ubuntu is fallback — see `create-lab/SKILL.md` Phase 3).
+
+**How the two tracks lay out in the lab file:**
+
+1. **Toggle at the top.** The first section after the header is `## Before you begin — pick your track`. It contains **two collapsible `<details>` blocks**, one per platform. Each summarizes the tools that track uses and directs the student to watch for the matching 🍎 / 🐧 marker. See `lab-template.md` for the exact format.
+
+2. **Shared content stays shared.** Platform-independent sections — `## What you'll build`, the `### What is X?` intros, conceptual WHY questions, `## Putting it together`, `## Checklist`, `## Further Reading` — are written once. They do not duplicate per platform.
+
+3. **Platform-specific content gets dual labeled blocks.** Inside each Part:
+   - `## Setup` install commands use the `**macOS:** ... **Linux / WSL:** ...` dual-label format.
+   - `### Run the demo` — each TYPE+OUTPUT pair appears twice, labeled `**🍎 macOS**` and `**🐧 Linux / WSL**`.
+   - `### Exercise` — if the exercise involves a platform-specific command, present dual solution blocks inside the `<details><summary>Solution</summary>` tag.
+
+**Never collapse the dual-track down to a single platform.** A lab that only works on macOS or only works on Linux is a FAIL.
+
+**Instructor scripts follow the same dual-track rule.** Every lab produces TWO terminal screencast scripts:
+- `[ID]-script-macos.md` — macOS shooting script (OUTPUT blocks from tested macOS run)
+- `[ID]-script-linux.md` — Linux shooting script (OUTPUT blocks from tested Linux run; kubectl pod or Docker)
+
+The optional `[ID]-code-walkthrough.md` (only when scaffolded) is **shared** — not duplicated per platform, because demo code is cross-platform.
+
+---
+
 ## The scaffolding test
 
 Default to direct-terminal typing. A lab should ship demo files (`.sh` / `.py` / `.ts` / `Dockerfile` / etc.) **only** when the demo cannot reasonably be typed command-by-command into the terminal.
@@ -47,8 +77,8 @@ A lab needs **scaffolding** when at least one of these is true:
 
 **Consequences of the decision:**
 
-- **No scaffolding** → no `.sh` / `.py` / `.ts` demo files; students type every command directly into the terminal; `[ID]-code-walkthrough.md` is NOT written (there is nothing to walk through); `[ID]-script.md` is the only instructor asset.
-- **Scaffolding required** → write the demo files; `[ID]-code-walkthrough.md` IS written; students still type commands themselves when practical, and the scripts are a reference implementation.
+- **No scaffolding** → no `.sh` / `.py` / `.ts` demo files; students type every command directly into the terminal; `[ID]-code-walkthrough.md` is NOT written (there is nothing to walk through); the two terminal scripts (`[ID]-script-macos.md` and `[ID]-script-linux.md`) are the only instructor assets.
+- **Scaffolding required** → write the demo files; `[ID]-code-walkthrough.md` IS written (shared across both platforms); students still type commands themselves when practical, and the demo files are a reference implementation.
 
 Lab 1.5 ("Seeing the Machine") is the canonical example of *no scaffolding needed* — every demo is a single-line `sysctl` / `xxd` / `python3.12 -c "..."` command the student types live. A lab like "Build a TCP server in 30 lines of Python" is the canonical example of *scaffolding required* — the student cannot reasonably type 30 lines correctly on the first try.
 
@@ -62,7 +92,7 @@ Interactivity is not optional. Every Part of a lab must include both:
 
 **1. Student types commands directly into the terminal.**
 
-Direct-terminal typing is the primary form of interactivity, not a fallback. In a no-scaffolding lab this means every Part has ≥2 discrete command blocks the student types themselves, each with its own labeled output. `bash demo.sh` abstraction is not acceptable as the student's primary action in this mode.
+Direct-terminal typing is the primary form of interactivity, not a fallback. In a no-scaffolding lab this means every Part has ≥2 discrete command blocks **per platform** the student types themselves, each with its own labeled output. `bash demo.sh` abstraction is not acceptable as the student's primary action in this mode.
 
 In a scaffolded lab, the student may run the demo file *after* typing at least one command themselves (a warm-up one-liner in the REPL, a `curl` probe, a `docker ps`, etc.). Running a pre-written script is never the only interactive moment in a Part.
 
@@ -95,7 +125,7 @@ Format questions with a collapsible answer:
 
 ## Demo Code Standards
 
-These rules apply **only to labs that require scaffolding** (see "The scaffolding test" above). Labs without demo files have nothing in this section to satisfy — the terminal commands and their captured outputs in the lab file take the place of demo files.
+These rules apply **only to labs that require scaffolding** (see "The scaffolding test" above). Labs without demo files have nothing in this section to satisfy — the terminal commands and their captured outputs in the lab file (dual-labeled per track) take the place of demo files.
 
 When a lab requires scaffolding, every demo file must:
 

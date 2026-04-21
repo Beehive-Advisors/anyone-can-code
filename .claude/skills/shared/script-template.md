@@ -2,10 +2,13 @@
 
 Strict formatting rules for all instructor script files. For pedagogical principles, see `STANDARDS.md`.
 
-There are two possible script file types. The second is **conditional on the scaffolding test** (see `STANDARDS.md`):
+Every lab produces **two** terminal screencast scripts — one per platform — and **optionally** a shared code walkthrough (only when scaffolded):
 
-1. **`[ID]-script.md`** — Terminal screencast shooting script. **Always written.**
-2. **`[ID]-code-walkthrough.md`** — VS Code editor walkthrough (recorded before the terminal screencast). **Written only when the lab has scaffolding** (i.e., `.sh` / `.py` / `.ts` / Dockerfile / etc. demo files exist). A lab without demo files has nothing to walk through — skip this file entirely. Labs without scaffolding produce only the terminal script.
+1. **`[ID]-script-macos.md`** — Terminal screencast shooting script for the macOS video. **Always written.** OUTPUT blocks are verbatim from a tested macOS run.
+2. **`[ID]-script-linux.md`** — Terminal screencast shooting script for the Linux / WSL video. **Always written.** OUTPUT blocks are verbatim from a tested Linux run (kubectl pod on the k0s cluster preferred; Docker Ubuntu fallback).
+3. **`[ID]-code-walkthrough.md`** — VS Code editor walkthrough (recorded once, used for both videos). **Written only when the lab has scaffolding** (i.e., `.sh` / `.py` / `.ts` / Dockerfile / etc. demo files exist). The walkthrough is **not** duplicated per platform because demo code is cross-platform — opening a Python file in VS Code reads the same regardless of OS.
+
+The two terminal scripts share structure beat-for-beat — same Parts, same exercises, same conceptual narration. They differ only in the TYPE commands and the OUTPUT blocks. Keep them in lockstep: if you change one, mirror the change in the other.
 
 ---
 
@@ -50,12 +53,18 @@ Use for: narrating output, connecting output back to the concept.
 
 ---
 
-## `[ID]-script.md` Structure
+## `[ID]-script-{macos,linux}.md` Structure
+
+Both files follow this structure identically. They differ only in:
+- The `**Platform:**` metadata line at the top
+- The exact commands inside each TYPE beat
+- The captured OUTPUT blocks (verbatim from that platform)
 
 ```markdown
-# Instructor Script — Lab [ID]: [TOPIC_TITLE]
+# Instructor Script — Lab [ID]: [TOPIC_TITLE] (macOS | Linux / WSL)
 
 **Format:** Screencast — terminal only
+**Platform:** macOS (Apple Silicon or Intel)   |   Linux / WSL (Ubuntu 22.04+ recommended)
 **Estimated recording time:** ~N–M min
 **Terminal:** VS Code integrated terminal or iTerm2. Font size 16+, dark theme.
 

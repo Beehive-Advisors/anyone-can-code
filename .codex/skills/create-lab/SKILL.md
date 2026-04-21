@@ -16,7 +16,9 @@ You are building a complete lab for the "Anyone Can Code" Udemy course. This is 
 
 **Default to direct-terminal typing.** Most labs do not need demo files (`.sh` / `.py` / `.ts`) — students learn more by typing individual commands themselves than by running pre-written scripts. Only produce demo files when the lab requires scaffolding (see "The scaffolding test" in `STANDARDS.md`). The research phase is responsible for making this call explicitly; every subsequent phase branches on it.
 
-**Before writing any deliverable:** read `.codex/skills/.anyone-can-code-common/STANDARDS.md`, `.codex/skills/.anyone-can-code-common/lab-template.md`, and `.codex/skills/.anyone-can-code-common/script-template.md`. These are authoritative — follow them exactly. For any demo files you write (only when scaffolding is required), also read the relevant `.codex/skills/.anyone-can-code-common/tech-standards/<language>.md` file(s) for each language you use.
+**Every lab ships two cross-platform tracks** (see "Cross-platform tracks" in `STANDARDS.md`). The student-facing `[ID]-lab.md` contains both a macOS track and a Linux / WSL track, with a `## Before you begin — pick your track` toggle at the top. The instructor produces **two** terminal shooting scripts: `[ID]-script-macos.md` (from macOS tested output) and `[ID]-script-linux.md` (from Linux tested output — see Phase 3 for the kubectl-pod testing environment). The optional `[ID]-code-walkthrough.md` (only when scaffolded) is **shared** — one file, not per platform.
+
+**Before writing any deliverable:** read `.codex/skills/.anyone-can-code-common/references/standards.md`, `.codex/skills/.anyone-can-code-common/references/lab-format.md`, and `.codex/skills/.anyone-can-code-common/references/script-format.md`. These are authoritative — follow them exactly. For any demo files you write (only when scaffolding is required), also read the relevant `.codex/skills/.anyone-can-code-common/references/tech-standards/<language>.md` file(s) for each language you use.
 
 ## Arguments
 
@@ -97,11 +99,17 @@ Research ALL viable implementation options:
 - Any other relevant tools
 - Which tool gives the most direct, least-abstracted view of this concept?
 
+**3a. Parallel macOS and Linux command pairs — REQUIRED**
+Every lab ships two tracks. For every demo step, produce a matched pair: macOS command + Linux/WSL (Ubuntu 22.04+) command. Where a single command is cross-platform (`xxd`, `df -h`, `python3.12 -c`, `docker run ...`), put the same command in both columns. Where the concept's native tool is platform-specific (`lscpu` is Linux-only; `sysctl` is macOS-only), pick the closest equivalent on the other side and note any information gap.
+
+Deliver this as an explicit `### Cross-platform command pairs` table per concept, with columns: Step | 🍎 macOS | 🐧 Linux / WSL | Output shape difference.
+
 **4. Constraints and gotchas**
-- Platform differences (macOS vs. Linux)
+- Platform differences (macOS BSD vs. GNU Linux) — list every flag that differs
 - Input type requirements
 - Version compatibility issues
 - Common student errors
+- Which Linux distro the Linux track assumes (default: Ubuntu 22.04 / WSL2 default)
 
 **5. Sources** (minimum 3 per concept)
 Official documentation, RFC/spec if applicable, package page, well-known tutorial.
@@ -169,7 +177,7 @@ Parse the `## Scaffolding Decision` section from `RESEARCH_DUMP`. Store as `SCAF
 
 **Step 1: Choose the technology stack** (scaffolded labs only)
 
-Based on the topic and research, choose the most direct, least-abstracted tool. Use judgment from the research — there is no hardcoded decision table. Read `.codex/skills/.anyone-can-code-common/tech-standards/<language>.md` for each language you plan to use.
+Based on the topic and research, choose the most direct, least-abstracted tool. Use judgment from the research — there is no hardcoded decision table. Read `.codex/skills/.anyone-can-code-common/references/tech-standards/<language>.md` for each language you plan to use.
 
 Document your decision: "This lab uses [TECH STACK] because [REASON]."
 
@@ -197,7 +205,7 @@ For **direct-typing labs**, the only environment work is verifying that the CLI 
 
 **Step 5: Write the demo files** (scaffolded labs only)
 
-Write each demo file using the `Write` tool. Follow `.codex/skills/.anyone-can-code-common/tech-standards/<language>.md` for all language-specific rules (headers, section banners, output labeling, known gotchas).
+Write each demo file using the `Write` tool. Follow `.codex/skills/.anyone-can-code-common/references/tech-standards/<language>.md` for all language-specific rules (headers, section banners, output labeling, known gotchas).
 
 Universal rules (all languages):
 - Header comment explaining what the file is and how to run it
@@ -247,27 +255,55 @@ Note: Docker on macOS runs in a Linux VM, not bare metal. `lsmem` and `lsblk` ma
 
 ---
 
+**Capture BOTH platforms' output for every command.** Every TYPE command that appears anywhere in the lab or scripts is tested twice:
+- 🍎 **macOS**: run natively on the instructor's Mac. Store as `OUTPUT_macos_*`.
+- 🐧 **Linux / WSL**: run inside the kubectl pod on the bare-metal k0s cluster (preferred, per the Linux Testing Environment section above) or a `docker run --rm ubuntu:22.04` container (fallback). Store as `OUTPUT_linux_*`.
+
 Two modes, per `SCAFFOLDING_REQUIRED`:
 
-**Scaffolded labs — run each demo file:**
+### 3a. Scaffolded labs — run each demo file on BOTH platforms
+
+**🍎 macOS:**
 - Shell: `bash [filename].sh 2>&1`
 - Python: `cd $0 && source .venv/bin/activate && python3.12 [filename].py 2>&1`
 - TypeScript: `cd $0 && npx ts-node [filename].ts 2>&1`
 - Docker: `docker run [image] [command] 2>&1`
 - Multi-process: start server in background (`&`), run client, kill server
 
-Store each file's complete stdout as `OUTPUT_[filename]`.
+Store as `OUTPUT_macos_[filename]`.
 
-**Direct-typing labs — run each command from `COMMAND_PLAN` individually:**
+**🐧 Linux:**
+Run the **same demo file** inside the kubectl pod (demo code is typically cross-platform; output differs when the file probes OS state via `sysctl` / `lscpu`). Example:
+```bash
+kubectl cp $0 lab-capture:/lab
+kubectl exec lab-capture -- bash -c "cd /lab && bash [filename].sh 2>&1"
+```
+Store as `OUTPUT_linux_[filename]`.
 
-For each Part in the plan, execute every command in sequence, capturing the output of each. Store each pair as `OUTPUT_partN_cmdM`. These become the verbatim OUTPUT blocks in the lab file, one per discrete student-typed command. Typical shapes:
-- `sysctl -n hw.memsize` → one-line number
-- `xxd hello.txt` → a few lines
-- `python3.12 -c "print(ord('H'))"` → one-line result
+### 3b. Direct-typing labs — run each command from `COMMAND_PLAN` on BOTH platforms
 
-Do NOT collapse multiple commands into one wrapper script — the point of this lab's design is that the student types each command individually. Capture each output independently.
+For each Part in the plan:
+- Execute every 🍎 macOS command natively on the Mac; store as `OUTPUT_macos_partN_cmdM`.
+- Execute every 🐧 Linux command in the kubectl pod; store as `OUTPUT_linux_partN_cmdM`.
 
-**If exit code is not 0 (either mode):** stop, read the error, fix the command or file with `Edit`, re-run. Never proceed with a failing test.
+Typical paired shapes:
+- `sysctl -n hw.memsize` (mac) → one-line bytes number; `grep MemTotal /proc/meminfo` (linux) → one line with kB units
+- `xxd hello.txt` (both) → same output structure (file content is identical)
+- `python3.12 -c "print(ord('H'))"` (both) → same output (Python is cross-platform)
+
+Do NOT collapse multiple commands into one wrapper script — the student types each command individually. Capture each output independently on each platform.
+
+### 3c. Exception: Linux command cannot run in the pod or Docker
+
+If a command genuinely cannot run inside the kubectl pod or minimal Docker container (requires GUI, specific hardware access, privileged kernel features, or a service already running elsewhere):
+1. Document why in a `LINUX_OUTPUT_EXCEPTIONS` note.
+2. Build the Linux OUTPUT block from research (research must have captured a real example for this to be valid).
+3. Add the marker line below the OUTPUT block: `*(Linux output from Ubuntu 22.04; your values may differ by distro.)*`
+4. Never fabricate output — if research didn't capture it and neither pod nor Docker can run it, stop and report the gap instead of inventing numbers.
+
+### Failure handling
+
+**If exit code is not 0 (either platform, either mode):** stop, read the error, fix the command or file with `Edit`, re-run. Never proceed with a failing test.
 
 Paste each captured output verbatim into all lab/script OUTPUT blocks — never paraphrase. For variable output (hashes, tokens, timestamps): paste the actual captured output, then note: `*(Your [value] will look different — structure is the same.)*`
 
@@ -329,33 +365,37 @@ Write `$0/[LAB_ID]-report.md`. Target: 200–400 lines.
 
 Write `$0/[LAB_ID]-lab.md`. Target: 400–600 lines. Shorter is better.
 
-Follow `.codex/skills/.anyone-can-code-common/lab-template.md` exactly for section order, heading names, and formatting rules. Follow `STANDARDS.md` for all pedagogical requirements.
+Follow `.codex/skills/.anyone-can-code-common/references/lab-format.md` exactly for section order, heading names, and formatting rules. Follow `STANDARDS.md` for all pedagogical requirements.
 
 Key reminders:
 - First principles before jargon — start with the problem, not the solution name
+- Open with `## Before you begin — pick your track` containing two `<details>` blocks (🍎 macOS and 🐧 Linux / WSL) — the student-facing toggle
 - Students must type commands directly in the terminal in every Part
-  - **Direct-typing labs:** each Part's "Run the demo" section is 2–4 discrete TYPE+OUTPUT command pairs the student types individually (no `bash demo.sh` wrapper)
-  - **Scaffolded labs:** `bash demo.sh` / `python3.12 demo.py` plus at least one student-typed command per Part
-- Every Part has a conceptual question testing WHY (see `.codex/skills/.anyone-can-code-common/STANDARDS.md` for good/bad examples)
-- Platform splits for any CLI tool installs
-- All output blocks use verbatim Phase 3 captures (by-file for scaffolded labs, by-command for direct-typing labs)
-- **macOS callout boxes** must also show verbatim Phase 3 outputs (`OUTPUT_macos_partN_cmdM`) — not commands-only blocks. Each macOS command in a callout gets its own output block, same as Linux commands in the main demo.
+  - **Direct-typing labs:** each Part's "Run the demo" section has 2–4 paired command blocks. Each block has a 🍎 macOS TYPE+OUTPUT AND a 🐧 Linux / WSL TYPE+OUTPUT
+  - **Scaffolded labs:** the demo-file run command is shown dual-labeled (🍎 macOS OUTPUT and 🐧 Linux / WSL OUTPUT), plus at least one student-typed command per Part
+- Every Part has a conceptual question testing WHY (see `.codex/skills/.anyone-can-code-common/references/standards.md` for good/bad examples). Questions and WHY answers are shared across tracks — the concept is platform-neutral.
+- Platform splits for any CLI tool installs (`brew install ...` vs `sudo apt install ...`)
+- All output blocks use verbatim Phase 3 captures. Use `OUTPUT_macos_*` inside 🍎 blocks; `OUTPUT_linux_*` inside 🐧 blocks. Never mix.
 
 ---
 
-## PHASE 6: Write Instructor Script(s)
+## PHASE 6: Write Instructor Scripts
 
-Follow `.codex/skills/.anyone-can-code-common/script-template.md` exactly for beat format, section structure, and file naming.
+Follow `.codex/skills/.anyone-can-code-common/references/script-format.md` exactly for beat format, section structure, and file naming.
 
-The decision is purely the scaffolding test:
+Every lab produces **two** terminal screencast scripts — one per platform — and **optionally** a single shared code walkthrough:
 
-- **If `SCAFFOLDING_REQUIRED` is Yes:** write both files.
-  1. `$0/[LAB_ID]-code-walkthrough.md` — VS Code walkthrough recorded before the lab video
-  2. `$0/[LAB_ID]-script.md` — terminal screencast recorded after
+1. `$0/[LAB_ID]-script-macos.md` — macOS terminal screencast. TYPE commands use macOS syntax. OUTPUT blocks use `OUTPUT_macos_*` captures.
+2. `$0/[LAB_ID]-script-linux.md` — Linux / WSL terminal screencast. TYPE commands use Linux syntax. OUTPUT blocks use `OUTPUT_linux_*` captures.
+3. `$0/[LAB_ID]-code-walkthrough.md` — VS Code walkthrough of the demo code. **Write this only if `SCAFFOLDING_REQUIRED` is Yes.** Shared across both platforms (demo code is cross-platform).
 
-- **If `SCAFFOLDING_REQUIRED` is No:** write only `$0/[LAB_ID]-script.md`. **Do NOT write a code walkthrough** — there is no code to walk through; the terminal script is the complete instructor asset.
+The two terminal scripts share structure beat-for-beat — same Parts, same exercise sequence, same SPEAK narration for concepts. They differ only in the TYPE commands and the OUTPUT blocks. Write them as sibling files and keep them in lockstep. When you change one, mirror the change in the other.
 
-All OUTPUT blocks use verbatim Phase 3 captures. Never write invented output. In direct-typing labs, each captured `OUTPUT_partN_cmdM` maps to one TYPE+OUTPUT+EXPLAIN beat in the terminal script (not a single bulk output for the whole Part).
+The macOS script is written first (OUTPUT blocks come from the native macOS run). The Linux script is written second by mirroring the macOS file and swapping in the Linux TYPE commands and `OUTPUT_linux_*` captures.
+
+**Do NOT** duplicate the code walkthrough per platform. A Python file or Dockerfile reads the same regardless of which OS the instructor is on; one walkthrough serves both recordings.
+
+All OUTPUT blocks use verbatim Phase 3 captures. Never write invented output. In direct-typing labs, each captured `OUTPUT_{macos,linux}_partN_cmdM` maps to one TYPE+OUTPUT+EXPLAIN beat in the corresponding terminal script.
 
 ---
 
@@ -373,7 +413,7 @@ Spawn with:
 
 You are reviewing Lab $0 of the "Anyone Can Code" course. Read all files in `$0/` fresh.
 
-1. Read `STANDARDS.md`, `lab-template.md`, `script-template.md`, and all relevant `.codex/skills/.anyone-can-code-common/tech-standards/<lang>.md` files from the repo root.
+1. Read `STANDARDS.md`, `lab-template.md`, `script-template.md`, and all relevant `.codex/skills/.anyone-can-code-common/references/tech-standards/<lang>.md` files from the repo root.
 2. Read and follow the full `/review-lab` skill at `.codex/skills/review-lab/SKILL.md`.
 3. Apply it to lab `$0`.
 4. Return a structured PASS/FAIL report by component with specific fix instructions.

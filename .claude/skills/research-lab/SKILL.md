@@ -56,11 +56,21 @@ For each concept in the syllabus entry, use WebSearch and WebFetch to gather:
 - TypeScript/Node.js packages if applicable (npm name, version, key API)
 - Which tool gives the most direct, least-abstracted view of this concept?
 
+**3a. Parallel macOS and Linux command pairs — REQUIRED**
+
+Every lab ships two tracks. For every demo step, research both platforms and produce a **matched pair**:
+
+| Concept step | 🍎 macOS command | 🐧 Linux / WSL (Ubuntu 22.04+) command | Notes on output-shape differences |
+|---|---|---|---|
+
+List every command the student will type across both tracks. Where a single command works identically on both (`xxd`, `df -h`, `python3.12 -c`, `docker ...`), put the same command in both columns and note "cross-platform." Where a concept's native tool only exists on one platform (`lscpu` is Linux-only; `system_profiler` is macOS-only), pick the closest equivalent for the other platform and note any information gap.
+
 **4. Constraints and gotchas**
-- Platform differences (macOS BSD tools vs. GNU Linux tools)
+- Platform differences (macOS BSD tools vs. GNU Linux tools) — list every flag that differs between the two
 - Input type requirements (bytes vs. str, encoding, key lengths)
 - Version compatibility issues
 - Common student errors
+- Which Linux distro the research assumes (default: Ubuntu 22.04+ since WSL2's default distro matches)
 
 **5. Source URLs** (minimum 3 per concept)
 - Official documentation or man page
@@ -114,6 +124,13 @@ Return the full research dump in this structure. Do not truncate — this will b
 [Python: PyPI name, version, uv pip install, key signatures]
 [TypeScript/Node: npm name, version, key API]
 - Recommended approach: [most direct tool for this concept and why]
+
+### Cross-platform command pairs
+
+| Step | 🍎 macOS | 🐧 Linux / WSL (Ubuntu) | Output shape difference |
+|------|----------|-------------------------|-------------------------|
+| [what it shows] | `[exact macOS command]` | `[exact Linux command]` | [brief note] |
+| [what it shows] | `[exact macOS command]` | `[exact Linux command]` | [brief note] |
 
 ### Constraints and Gotchas
 - [Gotcha 1]

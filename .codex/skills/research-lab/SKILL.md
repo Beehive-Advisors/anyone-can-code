@@ -1,86 +1,186 @@
 ---
 name: research-lab
-description: Research an Anyone Can Code lab topic from a syllabus section and produce a structured research dump with first-principles explanations, mechanics, tooling options, gotchas, sources, and a scaffolding decision. Use when the user asks to research or look up a lab topic.
+description: |
+  Research a topic for an "Anyone Can Code" course lab. Reads SYLLABUS.md to find
+  the topic for the given section ID, then uses WebSearch and WebFetch to build a
+  structured research dump. Returns: first-principles concept explanations, internal
+  mechanics, tool and library details, known constraints/gotchas, ≥3 source URLs per
+  concept, and demo file structure suggestions. Invoked by /create-lab or standalone.
+  Use when user says "research lab", "look up topic for", or provides a section ID
+  and asks for research.
 metadata:
-  short-description: Research a lab topic and decide scaffolding
+  short-description: Research a lab topic and produce a structured dump
 ---
 
-# Research Lab
+# /research-lab — Lab Topic Research
 
-Use this skill only in the Anyone Can Code course repo.
+You are the research phase of the "Anyone Can Code" lab creation pipeline. Your job is to produce a comprehensive, structured research dump that will be used to write the student lab, instructor script, and research report.
 
-Before starting, read:
-- `../.anyone-can-code-common/references/standards.md`
+**Read `.codex/skills/.anyone-can-code-common/references/standards.md` before starting.** It defines the quality criteria your research dump must support.
 
-Inputs:
-- Required: lab section id such as `5.7`
+## Arguments
 
-## Workflow
+- `$0` — Lab section ID (e.g., "5.7", "6.1"). Required.
 
-### 1. Resolve The Topic
+---
 
-- Read `SYLLABUS.md`.
-- Extract the section title, learning objectives, and prerequisites for the requested lab id.
-- If the section is missing, stop and ask for the topic and objectives.
-- Read `LAB_COVERAGE.md` if present so prior labs are not repeated as primary teaching points.
+## Step 1: Read the Syllabus
 
-### 2. Research Each Concept
+Read `SYLLABUS.md` in the repo root. Find the entry for section `$0`. Extract:
+- **Topic title**
+- **Learning objectives**
+- **Prerequisite labs**
 
-For each major concept in the syllabus entry, gather:
-- a first-principles explanation for beginners
-- internal mechanics
-- viable shell, Python, and TypeScript or Node options when relevant
-- platform and version gotchas
-- demo design ideas
-- at least 3 real source URLs
+If the section is not found, stop and ask: "What is the topic and learning objectives for lab `$0`?"
 
-Use current browsing because the research can be time-sensitive. Prefer primary sources.
+---
 
-### 3. Make A Scaffolding Decision
+## Step 2: Research Each Concept
 
-Apply the scaffolding test from `standards.md`.
+For each concept in the syllabus entry, use WebSearch and WebFetch to gather:
 
-Return one of:
-- `Required: Yes`
-- `Required: No`
+**1. First-principles explanation**
+- What problem does this solve?
+- How would you explain it to someone who knows basic programming but nothing about this topic?
+- What is the concept before you give it a name?
 
-Include 2 to 4 sentences of reasoning.
+**2. Internal mechanics**
+- The actual algorithm, data structure, or protocol steps
+- What happens at the byte/packet/function level
+- Not just "what it does" but "how it works"
 
-If `Yes`, list the recommended demo files and explain why each one cannot reasonably be typed live.
+**3. Tools and libraries** (research ALL viable options — do not assume a language)
+- Shell/CLI tools available (curl, nc, openssl, dig, etc.) — exact commands, key flags, platform notes
+- Python libraries if applicable (PyPI name, version, key API, install command)
+- TypeScript/Node.js packages if applicable (npm name, version, key API)
+- Which tool gives the most direct, least-abstracted view of this concept?
 
-If `No`, sketch the command sequence that should replace scaffolding for each lab part.
+**3a. Parallel macOS and Linux command pairs — REQUIRED**
 
-### 4. Check Prerequisites
+Every lab ships two tracks. For every demo step, research both platforms and produce a **matched pair**:
 
-- Confirm which prerequisite lab directories already exist in the repo.
-- Flag missing prerequisites.
+| Concept step | 🍎 macOS command | 🐧 Linux / WSL (Ubuntu 22.04+) command | Notes on output-shape differences |
+|---|---|---|---|
+
+List every command the student will type across both tracks. Where a single command works identically on both (`xxd`, `df -h`, `python3.12 -c`, `docker ...`), put the same command in both columns and note "cross-platform." Where a concept's native tool only exists on one platform (`lscpu` is Linux-only; `system_profiler` is macOS-only), pick the closest equivalent for the other platform and note any information gap.
+
+**4. Constraints and gotchas**
+- Platform differences (macOS BSD tools vs. GNU Linux tools) — list every flag that differs between the two
+- Input type requirements (bytes vs. str, encoding, key lengths)
+- Version compatibility issues
+- Common student errors
+- Which Linux distro the research assumes (default: Ubuntu 22.04+ since WSL2's default distro matches)
+
+**5. Source URLs** (minimum 3 per concept)
+- Official documentation or man page
+- RFC or specification (if applicable)
+- Package page (PyPI, npm, etc.)
+- Well-known tutorial or reference (Real Python, MDN, OWASP, etc.)
+
+**6. Demo design suggestions**
+- What sections would make a good demo file?
+- What intermediate values should be output to show students the internals?
+- What contrast or comparison would be most instructive for beginners?
+
+---
+
+## Step 3: Lab Design Rationale
+
+After researching all concepts, produce a recommendation:
+
+- What is the right tech stack for this lab? Why?
+- Should the demo use a local server or a real external service? Why?
+- Are any concepts demonstrable with stdlib or shell only (no dependencies)?
+- What's the minimum viable demo that delivers the key insight for each concept?
+- Any platform considerations for macOS vs. Linux/WSL students?
+- **Does this lab require scaffolding?** Apply the scaffolding test in `STANDARDS.md`. Answer yes or no with explicit reasoning. If yes, list the specific demo files you recommend writing and explain why each cannot be typed directly in the terminal (loops, state, multi-file setup, etc.). If no, sketch the sequence of terminal commands that will replace scaffolding in each Part. Default to no — most exploratory labs can be done entirely in the terminal.
+
+---
 
 ## Output Format
 
-Return a structured markdown report in this shape:
+Return the full research dump in this structure. Do not truncate — this will be used directly by the lab writer.
 
-```md
-# Research Dump: Lab <id> - <title>
+```
+# Research Dump: Lab $0 — [TOPIC_TITLE]
 
 ## Concepts Covered
+1. [Concept One]
+2. [Concept Two]
 
-## Concept 1: <name>
+---
+
+## Concept 1: [Name]
+
 ### First-Principles Explanation
+[2–4 paragraphs, no jargon until concept is established]
+
 ### Internal Mechanics
+[Algorithm, steps, data flow]
+
 ### Tools and Libraries
+[Shell tools: commands, flags, platform notes]
+[Python: PyPI name, version, uv pip install, key signatures]
+[TypeScript/Node: npm name, version, key API]
+- Recommended approach: [most direct tool for this concept and why]
+
+### Cross-platform command pairs
+
+| Step | 🍎 macOS | 🐧 Linux / WSL (Ubuntu) | Output shape difference |
+|------|----------|-------------------------|-------------------------|
+| [what it shows] | `[exact macOS command]` | `[exact Linux command]` | [brief note] |
+| [what it shows] | `[exact macOS command]` | `[exact Linux command]` | [brief note] |
+
 ### Constraints and Gotchas
+- [Gotcha 1]
+- [Gotcha 2]
+
 ### Suggested Demo Sections
+- Section A: [what to show]
+- Section B: [what to show]
+- Section C: [what to show]
+- Section D: [what to show]
+
 ### Sources
+- [Title](URL) — [one-line description]
+- [Title](URL)
+- [Title](URL)
+
+---
+
+## Concept 2: [Name]
+[same structure]
+
+---
 
 ## Scaffolding Decision
+
 **Required:** Yes / No
-**Reasoning:** ...
-**If Yes - demo files to write:** ...
-**If No - command sequence per Part:** ...
+
+**Reasoning:** [Apply the scaffolding test from STANDARDS.md. Explain the decision in 2–4 sentences.]
+
+**If Yes — demo files to write:**
+- `[filename.ext]` — [what it demonstrates, why it cannot be typed live]
+
+**If No — command sequence that replaces scaffolding:**
+- Part 1: [sketch of commands the student will type]
+- Part 2: [sketch of commands the student will type]
+- Part 3: [sketch of commands the student will type]
+
+---
 
 ## Lab Design Rationale
 
-## Prerequisite Check
-```
+### [Key decision]
+[Reasoning]
 
-Do not truncate. Include real links.
+### [Other constraint or tradeoff]
+[Reasoning]
+
+---
+
+## Prerequisite Check
+- Lab $0 requires: [prereq labs from syllabus]
+- These labs exist in the repo: [check with Glob]
+- These labs do NOT exist yet: [flag any missing]
+```
