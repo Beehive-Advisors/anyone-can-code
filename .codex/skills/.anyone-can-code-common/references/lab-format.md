@@ -18,37 +18,39 @@ Add this line only when the lab is scaffolded:
 **Files:** `<lab-id>/`
 ```
 
-## Before you begin — pick your track
+## Pick your track
 
-This is the **first section after the file header**, before What You'll Build. It is the student-facing toggle.
+This is the **first section after the file header, and it contains the entire body of the lab**. The lab's content lives inside two `<details>` collapsibles; nothing but the header and this intro sits outside them.
 
 ```md
-## Before you begin — pick your track
+## Pick your track
 
-This lab has two tracks in one file. Pick the one matching your operating system and follow the command blocks labeled for it throughout the lab.
+This lab has two versions in one file. **Click the one matching your operating system** and follow it top to bottom. You never need to open the other.
 
 <details>
-<summary><b>🍎 I'm on macOS</b> — tap to see what this lab looks like for you</summary>
+<summary><b>🍎 Click here if you're on macOS</b></summary>
 
-You'll use: `<tool 1>`, `<tool 2>`, `<tool 3>` — all installed by default on macOS (or via `brew install ...` if not).
-
-Throughout the lab, every command block labeled **🍎 macOS** is yours. The **🐧 Linux / WSL** blocks do the same thing with different commands — skip them.
+[FULL macOS lab — What You'll Build, Setup, Parts 1..N, Putting It Together, Checklist, Further Reading — macOS-native commands and outputs only]
 
 </details>
 
 <details>
-<summary><b>🐧 I'm on Linux or Windows/WSL</b> — tap to see what this lab looks like for you</summary>
+<summary><b>🐧 Click here if you're on Linux or Windows/WSL</b></summary>
 
-You'll use: `<tool 1>`, `<tool 2>`, `<tool 3>` — installed by default on most distributions (or via `sudo apt install ...` if not). WSL students: always use WSL2, not WSL1.
-
-Throughout the lab, every command block labeled **🐧 Linux / WSL** is yours. The **🍎 macOS** blocks do the same thing with different commands — skip them.
+[FULL Linux/WSL lab — same sections as macOS, mirrored beat-for-beat, using Linux-native commands and outputs only]
 
 </details>
 ```
 
-Keep each summary block tight — 2 to 4 lines. Name the specific tools the student will encounter in their track.
+**Key rules:**
+- The student clicks one summary, then reads top to bottom inside that collapsible. No per-Part toggling.
+- Shared conceptual content (What-you'll-build, WHY questions, Putting-it-together, Checklist) is duplicated inside each track — written twice. That's intentional: clicking once beats filtering throughout.
+- Inside a single track, commands are platform-native — no `**🍎 macOS**` or `**🐧 Linux / WSL**` dual-labeled blocks. Those emojis appear only in the two `<summary>` lines.
+- Keep the two tracks in lockstep: same Part count, same exercise count, same conceptual `### What is X?` intros and WHY questions, same number of Checklist items.
 
 ## What You'll Build
+
+All sections below appear **inside each platform's `<details>` block**, once per track. The formatting rules apply identically to both copies.
 
 Use 3 to 5 numbered outcomes.
 
@@ -77,32 +79,32 @@ Each Part uses this order:
 
 ### Run the demo
 
-Every command is **dual-labeled by platform** — every step appears once for macOS and once for Linux / WSL.
+Inside a track, commands are platform-native. Do NOT put dual 🍎 / 🐧 blocks inside a single track — the student already chose their platform via the top-level toggle.
 
 If the lab is direct-typing:
 - include 2 to 4 separate command blocks
 - each command block has:
-  - one framing sentence (shared — not per platform)
-  - a `**🍎 macOS**` heading followed by the exact macOS command, then `**Output:**` with verbatim output from a macOS run
-  - a `**🐧 Linux / WSL**` heading followed by the exact Linux command, then `**Output:**` with verbatim output from a tested Linux run (kubectl pod or Docker Ubuntu)
-  - 1 to 2 sentences (shared) connecting the result back to the concept
+  - one framing sentence
+  - a fenced code block with the exact command for this track's platform
+  - an `**Output:**` heading with verbatim output from a tested run on that platform
+  - 1 to 2 sentences connecting the result back to the concept
 
 If the lab is scaffolded:
-- show the run command once per platform (🍎 macOS and 🐧 Linux / WSL) with their respective `**Output (Section X):**` blocks
-- explain the labeled output (shared — the concept is platform-neutral)
+- show the run command for this track's platform with its `**Output (Section X):**` block
+- explain the labeled output
 - tell students to watch the walkthrough before continuing
 
 ### Conceptual question
 - ask a why question
-- shared across platforms (concepts are platform-neutral)
+- the text can be identical across tracks (concepts are platform-neutral), but write it once into each track — no shared blocks
 - use `<details><summary>Answer</summary>...</details>`
 
 ### Exercise
 - one concrete task
 - 5 to 15 minutes
 - requires the learner to type code or commands
-- if the exercise involves platform-specific commands: provide both 🍎 macOS and 🐧 Linux / WSL solution blocks inside the `<details><summary>Solution</summary>...</details>`
-- if the exercise is platform-neutral: a single solution block, no platform split
+- commands use this track's platform-native syntax; no dual blocks
+- use `<details><summary>Solution</summary>...</details>`
 
 ## Putting It Together
 

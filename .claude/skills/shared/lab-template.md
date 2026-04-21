@@ -4,7 +4,7 @@ Strict formatting rules for all student lab files (`[ID]-lab.md`). Follow these 
 
 **Before writing the lab, decide whether it requires scaffolding** (see "The scaffolding test" in `STANDARDS.md`). The decision changes how each Part's "Run the demo" subsection is formatted. Most hands-on exploratory labs should land on *no scaffolding* — students type individual commands in the terminal.
 
-**Every lab ships with two cross-platform tracks** (see "Cross-platform tracks" in `STANDARDS.md`). The macOS track is the instructor's primary platform (screencasts record natively on Mac). The Linux / WSL track lives in the same markdown file as parallel command blocks for students on Ubuntu / WSL2. Per-Part content is dual-labeled `**🍎 macOS**` and `**🐧 Linux / WSL**`.
+**Every lab ships with two cross-platform tracks** (see "Cross-platform tracks" in `STANDARDS.md`). The macOS track is the instructor's primary platform (screencasts record natively on Mac). The Linux / WSL track runs under Ubuntu 22.04 / WSL2. The two tracks live in one file as **two full-track `<details>` collapsibles** at the top — the student picks one with a single click and reads top to bottom within it. Commands inside a given track are platform-native (no dual 🍎/🐧 labels inside a single track).
 
 ---
 
@@ -22,39 +22,47 @@ Add a `**Files:** \`[ID]/\`` line **only** when the lab has scaffolding (i.e., t
 
 ---
 
-## Section: Before you begin — pick your track
+## Section: Pick your track
 
-This is the **first section** after the file header — before `## What you'll build`. It is the student-facing toggle. Required format:
+This is the **first section after the file header, and it contains the entire body of the lab**. Nothing lives outside the two collapsible tracks except the header, this intro, and the closing `</details>` tags. Each student clicks one toggle and reads from there to the bottom.
+
+Required format:
 
 ```markdown
-## Before you begin — pick your track
+## Pick your track
 
-This lab has two tracks in one file. Pick the one matching your operating system and follow the command blocks labeled for it throughout the lab.
+This lab has two versions in one file. **Click the one matching your operating system** and follow it top to bottom. You never need to open the other.
 
 <details>
-<summary><b>🍎 I'm on macOS</b> — tap to see what this lab looks like for you</summary>
+<summary><b>🍎 Click here if you're on macOS</b></summary>
 
-You'll use: `[tool 1]`, `[tool 2]`, `[tool 3]` — all installed by default on macOS (or via `brew install ...` if not).
-
-Throughout the lab, every command block labeled **🍎 macOS** is yours. The **🐧 Linux / WSL** blocks do the same thing with different commands — skip them.
+[FULL macOS lab — What you'll build, Setup, Parts 1..N, Putting it together, Checklist, Further Reading — all using macOS commands and outputs only]
 
 </details>
 
 <details>
-<summary><b>🐧 I'm on Linux or Windows/WSL</b> — tap to see what this lab looks like for you</summary>
+<summary><b>🐧 Click here if you're on Linux or Windows/WSL</b></summary>
 
-You'll use: `[tool 1]`, `[tool 2]`, `[tool 3]` — installed by default on most distributions (or via `sudo apt install ...` if not). WSL students: always use WSL2, not WSL1.
-
-Throughout the lab, every command block labeled **🐧 Linux / WSL** is yours. The **🍎 macOS** blocks do the same thing with different commands — skip them.
+[FULL Linux/WSL lab — same sections as macOS track, mirroring section-for-section, but with Linux commands and outputs only]
 
 </details>
 ```
 
-Keep each summary block tight — 2–4 lines of markdown. Name the specific tools the student will encounter in their track so they know what to expect.
+**Why this layout:** the student clicks once and sees only their platform. No per-Part switching, no filtering mentally through `🍎`/`🐧` blocks throughout the lab. The tradeoff is that shared conceptual content (What-you'll-build items, WHY answers, Putting-it-together summary) is written twice — once in each track. That duplication is intentional; keeping the tracks self-contained is worth more than a minor reduction in word count.
+
+**Keep the two tracks in lockstep.** Same number of Parts, same exercises, same conceptual intros (`### What is X?`), same WHY questions. The only differences are:
+- Setup block install commands (`brew install` vs `sudo apt install`)
+- Every TYPE command (macOS-native vs Linux-native)
+- Every OUTPUT block (verbatim from that platform's tested run)
+- Minor tool-specific notes (e.g., APFS container talk in the macOS disk section vs WSL2 virtual-disk talk in the Linux disk section)
 
 ---
 
 ## Section: What you'll build
+
+This section and everything else below appears **inside each platform's `<details>` block**, once per track. The following formatting rules apply identically to both track copies.
+
+---
 
 Numbered list of 3–5 items.
 
@@ -98,74 +106,39 @@ One Part per concept. Parts are numbered sequentially starting at 1.
 
 **2. Run the demo**
 
-The format depends on whether the lab has scaffolding (see `STANDARDS.md`). In both modes, the command/output content is **dual-labeled by platform** (see "Cross-platform tracks" in `STANDARDS.md`).
+Inside a given track, commands are platform-native — the student following the macOS track sees only macOS commands, and vice versa. Do NOT put dual-labeled blocks inside a track; that was the old format.
+
+The format depends on whether the lab has scaffolding (see `STANDARDS.md`).
 
 **Direct-typing mode (no scaffolding — no demo files):**
-Break this subsection into **2–4 discrete command blocks**. Each block demonstrates the same concept on both platforms. Per block:
+Break this subsection into **2–4 discrete command blocks**. Per block:
+- One framing sentence: what the student is about to do and why
+- A fenced code block with the exact command for their platform
+- An `**Output:**` heading followed by the verbatim output block (captured from a tested run on that platform)
+- 1–2 sentences tying that command's output back to the concept
 
-1. One framing sentence (shared): what the student is about to do and why.
-2. 🍎 **macOS** command + Output pair (verbatim from tested macOS run):
-   ```markdown
-   **🍎 macOS**
-   ```bash
-   [exact command]
-   ```
-   **Output:**
-   ```
-   [verbatim captured output]
-   ```
-   ```
-3. 🐧 **Linux / WSL** command + Output pair (parallel translation; verbatim from tested kubectl-pod or Docker Ubuntu run):
-   ```markdown
-   **🐧 Linux / WSL**
-   ```bash
-   [parallel Linux command]
-   ```
-   **Output:**
-   ```
-   [verbatim captured Linux output]
-   ```
-   ```
-4. 1–2 sentences (shared) tying the commands' behavior to the concept. Don't repeat the explanation per platform — one paragraph below both blocks.
-
-Do not collapse this into `bash demo.sh` + one giant output. The student should type every command themselves and see each result before moving to the next. This is the primary form of interactivity in no-scaffolding labs.
+Do not collapse this into `bash demo.sh` + one giant output. The student types every command themselves and sees each result before moving to the next.
 
 **Scaffolded mode (lab has demo files):**
-The demo-file run command and its expected output are also dual-labeled:
-```markdown
-**🍎 macOS**
-```bash
-bash demo.sh        # or: python3.12 demo.py
-```
-**Output (Section X):**
-```
-[verbatim tested macOS run]
-```
+- Exact command to run the demo file (e.g., `bash demo.sh` or `python3.12 demo.py`)
+- `**Output (Section X):**` heading
+- Verbatim output block from a tested run on that platform
+- 1–3 sentences explaining what each labeled output line means
+- One sentence directing students to the code walkthrough video before continuing
 
-**🐧 Linux / WSL**
-```bash
-bash demo.sh
-```
-**Output (Section X):**
-```
-[verbatim tested Linux run — values differ, structure matches]
-```
-```
-Plus: 1–3 sentences (shared) explaining what each labeled output line means, and one sentence directing students to the code walkthrough video.
-
-**Output block rules:** every OUTPUT block must come from a tested run on the corresponding platform. macOS outputs are captured natively. Linux outputs are captured from a kubectl pod on the k0s cluster (preferred) or a Docker Ubuntu container (fallback). Never fabricate output — see `create-lab/SKILL.md` Phase 3 for the capture procedure.
+**Output block rules:** every OUTPUT block must come from a tested run. For the macOS track, outputs are captured natively on the instructor's Mac. For the Linux track, outputs are captured from a kubectl pod on the k0s cluster (preferred) or a Docker Ubuntu container (fallback). Never fabricate output — see `create-lab/SKILL.md` Phase 3.
 
 **3. Conceptual question**
 - One question testing WHY, not syntax recall
-- Shared across platforms — the concept behind the command is the same regardless of OS
+- The text of the question can be identical in both tracks (concepts are platform-neutral), but write it into both — don't try to share
 - Uses `<details><summary>Answer</summary>explanation</details>`
 
 **4. `### Exercise`**
 - One concrete task, 5–15 minutes
 - Must require the student to type code or a command (not just read output)
 - Builds directly on what was just demonstrated
-- If the exercise involves platform-specific commands: present the exercise prompt once (shared), then provide two solution blocks inside the `<details><summary>Solution</summary>` — one labeled `**🍎 macOS**` and one labeled `**🐧 Linux / WSL**`
-- If the exercise is platform-neutral (a pure-Python expression, a `curl` invocation): single solution block, no platform split
+- Commands use the track's platform-native syntax. No dual blocks inside the Exercise — the student is already in their chosen track.
+- Uses `<details><summary>Solution</summary>solution + brief explanation</details>`
 
 ---
 

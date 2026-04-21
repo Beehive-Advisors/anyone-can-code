@@ -17,7 +17,7 @@ You are building a complete lab for the "Anyone Can Code" Udemy course. This is 
 
 **Default to direct-terminal typing.** Most labs do not need demo files (`.sh` / `.py` / `.ts`) — students learn more by typing individual commands themselves than by running pre-written scripts. Only produce demo files when the lab requires scaffolding (see "The scaffolding test" in `STANDARDS.md`). The research phase is responsible for making this call explicitly; every subsequent phase branches on it.
 
-**Every lab ships two cross-platform tracks** (see "Cross-platform tracks" in `STANDARDS.md`). The student-facing `[ID]-lab.md` contains both a macOS track and a Linux / WSL track, with a `## Before you begin — pick your track` toggle at the top. The instructor produces **two** terminal shooting scripts: `[ID]-script-macos.md` (from macOS tested output) and `[ID]-script-linux.md` (from Linux tested output — see Phase 3 for the kubectl-pod testing environment). The optional `[ID]-code-walkthrough.md` (only when scaffolded) is **shared** — one file, not per platform.
+**Every lab ships two cross-platform tracks** (see "Cross-platform tracks" in `STANDARDS.md`). The student-facing `[ID]-lab.md` has a `## Pick your track` section at the top containing two `<details>` collapsibles — one per platform — each holding the complete standalone lab for that platform. The student clicks one toggle and reads top to bottom without switching. The instructor produces **two** terminal shooting scripts: `[ID]-script-macos.md` (from macOS tested output) and `[ID]-script-linux.md` (from Linux tested output — see Phase 3 for the kubectl-pod testing environment). The optional `[ID]-code-walkthrough.md` (only when scaffolded) is **shared** — one file, not per platform.
 
 **Before writing any deliverable:** read `.claude/skills/shared/STANDARDS.md`, `.claude/skills/shared/lab-template.md`, and `.claude/skills/shared/script-template.md`. These are authoritative — follow them exactly. For any demo files you write (only when scaffolding is required), also read the relevant `.claude/skills/shared/tech-standards/<language>.md` file(s) for each language you use.
 
@@ -370,13 +370,15 @@ Follow `.claude/skills/shared/lab-template.md` exactly for section order, headin
 
 Key reminders:
 - First principles before jargon — start with the problem, not the solution name
-- Open with `## Before you begin — pick your track` containing two `<details>` blocks (🍎 macOS and 🐧 Linux / WSL) — the student-facing toggle
-- Students must type commands directly in the terminal in every Part
-  - **Direct-typing labs:** each Part's "Run the demo" section has 2–4 paired command blocks. Each block has a 🍎 macOS TYPE+OUTPUT AND a 🐧 Linux / WSL TYPE+OUTPUT
-  - **Scaffolded labs:** the demo-file run command is shown dual-labeled (🍎 macOS OUTPUT and 🐧 Linux / WSL OUTPUT), plus at least one student-typed command per Part
-- Every Part has a conceptual question testing WHY (see `.claude/skills/shared/STANDARDS.md` for good/bad examples). Questions and WHY answers are shared across tracks — the concept is platform-neutral.
-- Platform splits for any CLI tool installs (`brew install ...` vs `sudo apt install ...`)
-- All output blocks use verbatim Phase 3 captures. Use `OUTPUT_macos_*` inside 🍎 blocks; `OUTPUT_linux_*` inside 🐧 blocks. Never mix.
+- Open with `## Pick your track` containing two top-level `<details>` blocks — the macOS track and the Linux / WSL track. Each collapsible holds the FULL standalone lab for that platform (What-you'll-build, Setup, all Parts, Putting-it-together, Checklist, Further Reading). Nothing but the file header lives outside the two collapsibles.
+- Inside a track, commands are platform-native. No dual 🍎/🐧 blocks inside a single collapsible. The macOS track's commands are all macOS; the Linux track's commands are all Linux.
+- Students must type commands directly in the terminal in every Part:
+  - **Direct-typing labs:** each Part's "Run the demo" has 2–4 discrete TYPE+OUTPUT command blocks in the track's native syntax.
+  - **Scaffolded labs:** each Part has the demo-file run command plus at least one student-typed command, both in the track's native syntax.
+- Every Part has a conceptual question testing WHY (see `.claude/skills/shared/STANDARDS.md` for good/bad examples). The two tracks can carry the same question text (concepts are platform-neutral), but write it into both tracks — don't try to share across collapsibles.
+- Platform splits for any CLI tool installs inside each track's Setup section (`brew install ...` in the macOS track, `sudo apt install ...` in the Linux track).
+- All OUTPUT blocks use verbatim Phase 3 captures. Use `OUTPUT_macos_*` inside the macOS track; use `OUTPUT_linux_*` inside the Linux track. Never mix.
+- The two tracks mirror each other beat-for-beat: same Part count, same exercise count, same WHY-question count, same number of Checklist items. The only differences are platform-native commands and their outputs.
 
 ---
 

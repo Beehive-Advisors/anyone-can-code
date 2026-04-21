@@ -40,14 +40,15 @@ Every lab has **two parallel tracks** that coexist in the same `[ID]-lab.md` fil
 
 **How the two tracks lay out in the lab file:**
 
-1. **Toggle at the top.** The first section after the header is `## Before you begin — pick your track`. It contains **two collapsible `<details>` blocks**, one per platform. Each summarizes the tools that track uses and directs the student to watch for the matching 🍎 / 🐧 marker. See `lab-template.md` for the exact format.
+The lab's body is split into **two full-track collapsibles** at the top of the file. The student clicks one toggle and reads from there to the bottom of that track. Nothing but the file header sits outside the two collapsibles.
 
-2. **Shared content stays shared.** Platform-independent sections — `## What you'll build`, the `### What is X?` intros, conceptual WHY questions, `## Putting it together`, `## Checklist`, `## Further Reading` — are written once. They do not duplicate per platform.
+1. **One single toggle at the top.** The first section after the file header is `## Pick your track`. It contains exactly two `<details>` blocks — one for macOS, one for Linux / WSL. Each block holds the complete standalone lab for that platform (What-you'll-build, Setup, all Parts, Putting-it-together, Checklist, Further Reading). See `lab-template.md` for the exact scaffolding.
 
-3. **Platform-specific content gets dual labeled blocks.** Inside each Part:
-   - `## Setup` install commands use the `**macOS:** ... **Linux / WSL:** ...` dual-label format.
-   - `### Run the demo` — each TYPE+OUTPUT pair appears twice, labeled `**🍎 macOS**` and `**🐧 Linux / WSL**`.
-   - `### Exercise` — if the exercise involves a platform-specific command, present dual solution blocks inside the `<details><summary>Solution</summary>` tag.
+2. **Each track is self-contained.** A student on macOS expands the macOS toggle and reads from top to bottom without ever seeing Linux content. The two tracks mirror each other beat-for-beat — same Part count, same exercise count, same conceptual intros, same WHY questions — but every command, every OUTPUT block, every tool reference is platform-native inside each track.
+
+3. **Shared conceptual content is duplicated, not shared.** Because the entire lab body lives inside the two collapsibles, platform-neutral content like the `### What is X?` intros, WHY questions, Putting-it-together text, and Checklist items appear once in the macOS track and once in the Linux track. This duplication is intentional: the gain in reading flow (click once, never filter again) outweighs the cost of writing it twice.
+
+4. **Never put dual 🍎 / 🐧 blocks inside a single track.** That was an earlier format. Inside the macOS `<details>`, every command is macOS-native without any 🍎 label. Inside the Linux `<details>`, every command is Linux-native without any 🐧 label. The 🍎 / 🐧 emojis appear only in the two `<summary>` labels at the very top.
 
 **Never collapse the dual-track down to a single platform.** A lab that only works on macOS or only works on Linux is a FAIL.
 
@@ -125,7 +126,7 @@ Format questions with a collapsible answer:
 
 ## Demo Code Standards
 
-These rules apply **only to labs that require scaffolding** (see "The scaffolding test" above). Labs without demo files have nothing in this section to satisfy — the terminal commands and their captured outputs in the lab file (dual-labeled per track) take the place of demo files.
+These rules apply **only to labs that require scaffolding** (see "The scaffolding test" above). Labs without demo files have nothing in this section to satisfy — the terminal commands and their captured outputs inside each track's `<details>` block take the place of demo files.
 
 When a lab requires scaffolding, every demo file must:
 

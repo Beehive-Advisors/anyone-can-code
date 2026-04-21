@@ -27,9 +27,13 @@ Every lab ships two parallel tracks in one `[id]-lab.md` file:
 - 🍎 **macOS track** — the instructor's primary platform. OUTPUT blocks are verbatim from a tested macOS run.
 - 🐧 **Linux / WSL track** — for students on Ubuntu / WSL2. Commands are parallel translations; OUTPUT blocks are verbatim from a tested Linux run.
 
-The first section after the lab file header is `## Before you begin — pick your track`, containing two `<details>` blocks (one per platform) that act as the student-facing toggle. Shared content (conceptual intros, WHY questions, Putting-it-together, Checklist, Further Reading) is written once. Platform-specific content uses dual labeled blocks: every Run-the-demo subsection has a `**🍎 macOS**` TYPE+OUTPUT pair and a `**🐧 Linux / WSL**` TYPE+OUTPUT pair.
+**Single toggle at the top, not per-Part switching.** The first section after the lab file header is `## Pick your track`, which contains **two full-track `<details>` collapsibles** — one for macOS, one for Linux / WSL. Each block holds the entire standalone lab for that platform (What-you'll-build, Setup, all Parts, Putting-it-together, Checklist, Further Reading). The student clicks one toggle and reads top to bottom. Nothing but the file header lives outside the two collapsibles.
 
-Instructor terminal scripts are produced per platform: `[id]-script-macos.md` and `[id]-script-linux.md`. The optional code walkthrough (only when scaffolded) is shared — demo code is cross-platform.
+**Inside a track, commands are platform-native.** No dual `**🍎 macOS**` / `**🐧 Linux / WSL**` blocks inside a single collapsible — that was an earlier format. The 🍎 / 🐧 emojis appear only in the two `<summary>` lines.
+
+**Shared conceptual content is duplicated across the two tracks**, not shared. Because the lab body lives inside the collapsibles, identical conceptual intros, WHY questions, and Putting-it-together text appear twice — once per track. This duplication is intentional; keeping each track self-contained gives the student one toggle and clean top-to-bottom reading.
+
+**Instructor terminal scripts are produced per platform:** `[id]-script-macos.md` and `[id]-script-linux.md`. The optional code walkthrough (only when scaffolded) is shared — demo code is cross-platform.
 
 ## Linux Testing Environment
 

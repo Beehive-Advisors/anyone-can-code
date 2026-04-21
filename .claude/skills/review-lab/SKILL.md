@@ -100,7 +100,7 @@ The lab's scaffolding mode must be internally consistent. FAIL the lab if not.
 
 **If `SCAFFOLDED = false`:**
 - [ ] `{LAB_PREFIX}-code-walkthrough.md` does NOT exist. A direct-typing lab has nothing to walk through — its presence indicates leftover scaffolded-mode content that should be removed or converted.
-- [ ] Each Part's "Run the demo" in the lab contains ≥2 discrete paired command blocks (🍎 macOS TYPE+OUTPUT and 🐧 Linux / WSL TYPE+OUTPUT per step) — no `bash demo.sh` abstraction, no single collapsed dump
+- [ ] Each Part's "Run the demo" in each track contains ≥2 discrete TYPE+OUTPUT command blocks in that track's native syntax — no `bash demo.sh` abstraction, no single collapsed dump, no dual 🍎/🐧 blocks inside a single track
 - [ ] The lab's header block does NOT have a `**Files:**` line (there are no demo files to point at)
 
 Also — regardless of scaffolding mode — check:
@@ -110,14 +110,16 @@ Flag any violation as FAIL with the exact fix instruction.
 
 ### 1d. Cross-platform Track Consistency
 
-Every lab must carry a macOS track AND a Linux track. Read `{LAB_PREFIX}-lab.md`.
+Every lab must carry a macOS track AND a Linux track, each as a full standalone lab inside its own collapsible at the top of the file. Read `{LAB_PREFIX}-lab.md`.
 
-- [ ] Has a `## Before you begin — pick your track` section immediately after the file header, before `## What you'll build`
-- [ ] That section contains exactly two `<details>` blocks: one summarizing the 🍎 macOS track, one summarizing the 🐧 Linux / WSL track
-- [ ] Every "Run the demo" subsection in every Part has **both** a `**🍎 macOS**` TYPE+OUTPUT pair AND a `**🐧 Linux / WSL**` TYPE+OUTPUT pair (not one or the other)
-- [ ] Every Exercise that involves a platform-specific command provides both platforms' solutions inside the `<details><summary>Solution</summary>` block
-- [ ] OUTPUT blocks in the 🍎 macOS position are verbatim from a macOS run; OUTPUT blocks in the 🐧 Linux / WSL position are verbatim from a Linux run (kubectl pod or Docker Ubuntu). If a Linux output was sourced from research instead of a tested run, it must carry the `*(Linux output from Ubuntu 22.04; your values may differ by distro.)*` marker.
-- [ ] Shared content (conceptual intros, WHY questions, `## Putting it together`, checklist, further reading) is **not** duplicated per platform — written once, covers both tracks.
+- [ ] Has a `## Pick your track` section immediately after the file header (no `## What you'll build` or any other section outside the two collapsibles)
+- [ ] That section contains exactly two top-level `<details>` blocks — one per platform — and NOTHING else between them except whitespace
+- [ ] The first `<details>` summary clearly identifies macOS (e.g., `🍎 Click here if you're on macOS`); the second clearly identifies Linux / WSL
+- [ ] Each `<details>` block contains a full standalone track for that platform: What-you'll-build, Setup, all Parts, Putting-it-together, Checklist, Further Reading. The body of the lab lives INSIDE these collapsibles, not outside.
+- [ ] The two tracks mirror each other beat-for-beat: same Part count, same exercise count, same conceptual `### What is X?` section count, same WHY question count
+- [ ] Inside a track, commands are platform-native — no `**🍎 macOS**` or `**🐧 Linux / WSL**` dual-label blocks inside a single track (that was an old format). The macOS track uses macOS-native commands only; the Linux track uses Linux-native commands only.
+- [ ] OUTPUT blocks in the macOS track are verbatim from a macOS run; OUTPUT blocks in the Linux track are verbatim from a Linux run (kubectl pod or Docker Ubuntu). If a Linux output was sourced from research instead of a tested run, it must carry the `*(Linux output from Ubuntu 22.04; your values may differ by distro.)*` marker.
+- [ ] Platform-neutral content (conceptual intros, WHY questions, Putting-it-together, Checklist, Further Reading) appears **twice** — once inside each track. This duplication is intentional; flag it as a violation if the content is only present in one track and missing from the other.
 
 Flag any violation as FAIL with the exact fix instruction.
 
@@ -132,10 +134,10 @@ Read `{LAB_PREFIX}-lab.md`.
 **Structure checks (follow `.claude/skills/shared/lab-template.md`):**
 - [ ] Header has Section, Prerequisites, Time
 - [ ] Header has a `**Files:**` line **only if** `SCAFFOLDED = true` (direct-typing labs omit it)
-- [ ] Has `## Before you begin — pick your track` section immediately after the file header with two `<details>` blocks
-- [ ] Has `## What you'll build` with numbered concrete outcomes
-- [ ] Has `## Setup` with correct stack commands and `**macOS:** ... **Linux / WSL:** ...` splits for install lines
-- [ ] Every `## Part N` has a `### What is X?` intro, run-the-demo block (with dual 🍎/🐧 TYPE+OUTPUT pairs), conceptual question, and `### Exercise`
+- [ ] Has `## Pick your track` section immediately after the file header containing two full-track `<details>` collapsibles (the entire lab body lives inside them)
+- [ ] Inside each track: `## What you'll build` with numbered concrete outcomes
+- [ ] Inside each track: `## Setup` with install commands in that track's platform-native syntax (`brew install` in the macOS track, `sudo apt install` in the Linux track)
+- [ ] Inside each track: every `## Part N` has a `### What is X?` intro, a run-the-demo block in that track's platform-native syntax, a conceptual question, and an `### Exercise`
 - [ ] Every exercise has `<details><summary>Solution</summary>` collapsible block (with dual solutions when the command is platform-specific)
 - [ ] Has `## Putting it together`, `## Checklist`, `## Further Reading` (≥3 links)
 
