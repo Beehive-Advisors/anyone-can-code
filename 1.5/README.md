@@ -5,6 +5,7 @@
 | File | Audience | Purpose |
 |------|----------|---------|
 | `1.5-lab.md` | Student | Lab handout distributed to learners — contains both 🍎 macOS and 🐧 Linux/WSL tracks with a toggle at the top |
+| `sample.png` | Both | 69-byte 1×1 red-pixel PNG shipped with the lab so students can inspect PNG magic bytes in Part 4 without `curl` |
 | `1.5-script-macos.md` | Instructor | macOS terminal screencast shooting script |
 | `1.5-script-linux.md` | Instructor | Linux / WSL terminal screencast shooting script |
 | `1.5-report.md` | Instructor | Research background and sources |

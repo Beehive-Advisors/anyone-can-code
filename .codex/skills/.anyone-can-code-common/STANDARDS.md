@@ -83,6 +83,31 @@ Format questions with a collapsible answer:
 
 ---
 
+## Self-contained lab directory
+
+**Preferable, not strictly required.** Student work should happen inside the lab's own folder (e.g., `1.5/`) rather than in `/tmp` or the user's home directory. Any files the student creates, any files they inspect, and any artifacts they'll throw away when the lab ends should live within that folder.
+
+Why preferable:
+
+- The lab folder becomes the single artifact an instructor can hand to a student — a USB, zip, Drive share, repo clone — and the student can work end-to-end without leaving it. Nothing gets scattered across the student's machine.
+- No network dependency for reference files. Any PNG, compiled binary, or text file the lab analyzes is pre-committed to the folder; students don't need `curl` and don't break when upstream URLs change.
+- Cleanup at the end of the lab stays simple. Remove the files the student created; leave the shipped reference files in place.
+- Output blocks in the lab become deterministic. Every student running `xxd -l 16 sample.png` on a pre-shipped file sees identical bytes because the file is bit-for-bit the same everywhere.
+
+When leaving the folder is fine:
+
+- Reading system files by absolute path (e.g., `xxd -l 4 /bin/ls`, `cat /proc/cpuinfo`, `sysctl -n hw.memsize`). Those aren't "student artifacts" — they're points of interest elsewhere in the OS.
+- Labs whose topic *is* the filesystem convention being taught (e.g., `/tmp`, `/var/log`).
+- Demos that genuinely require a specific system location.
+
+**For the lab author:**
+- In Setup, tell the student to `cd` into the lab folder and state that they'll stay there for the rest of the lab.
+- Ship any reference files the lab inspects (images, binaries, sample inputs) in the folder. Prefer programmatically-generated small files over downloaded ones.
+- Keep a short `cd`-teaching-moment the first time the student's working directory matters (see Lab 1.5 Part 4): explain that `cd` is sticky, that `pwd` prints the current directory, and that `cd` with no argument returns home.
+- Cleanup at the end of the lab removes student-created files only — the shipped references stay.
+
+---
+
 ## Output Standards
 
 **Never invent output.** Every OUTPUT block in a lab or script must be captured from an actual test run of the demo code. No approximations, no reconstructions from memory.
