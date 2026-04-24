@@ -104,17 +104,19 @@ jobs:
 
       - name: LECTURE_COVERAGE / LAB_COVERAGE format
         run: |
-          for f in LECTURE_COVERAGE.md LAB_COVERAGE.md; do
-            if [ -f "$f" ]; then
-              python3 -c "
-          t = open('$f').read()
-          for section in t.split('## ')[1:]:
-              header = section.splitlines()[0]
-              if 'Lab' in '$f' and not header.startswith('Lab'):
-                  raise SystemExit(f'FAIL: unexpected section in $f: {header}')
-              if 'LECTURE' in '$f' and not header.startswith('Lecture'):
-                  raise SystemExit(f'FAIL: unexpected section in $f: {header}')
-          print('OK $f')
-          "
-            fi
-          done
+          python3 - <<'PYEOF'
+          import pathlib, re, sys
+          for fname in ("LECTURE_COVERAGE.md", "LAB_COVERAGE.md"):
+              p = pathlib.Path(fname)
+              if not p.exists():
+                  continue
+              text = p.read_text()
+              expected = "Lab" if "LAB" in fname else "Lecture"
+              # Only H2 headers at line start count as sections.
+              headers = re.findall(r"^## (.+)$", text, flags=re.MULTILINE)
+              bad = [h for h in headers if not h.startswith(expected)]
+              if bad:
+                  print(f"FAIL: unexpected H2 section(s) in {fname}: {bad}")
+                  sys.exit(1)
+              print(f"OK {fname} ({len(headers)} sections)")
+          PYEOF
