@@ -78,14 +78,19 @@ jobs:
           import re, sys
           text = open("SYLLABUS.md").read()
           allowed = {"", "Draft", "Approved"}
+          # Split on unescaped pipes only ('|' but not '\|')
+          def split_row(s: str) -> list[str]:
+              parts = re.split(r"(?<!\\)\|", s)
+              return [p.strip().replace("\\|", "|") for p in parts]
           bad = []
           for i, line in enumerate(text.splitlines(), 1):
               if "|" not in line:
                   continue
-              cols = [c.strip() for c in line.split("|")]
-              if len(cols) < 6:
+              cols = split_row(line)
+              # Expect a trailing empty cell after the last pipe; skip malformed rows
+              if len(cols) < 7 or cols[0] != "" or cols[-1] != "":
                   continue
-              if cols[1] in {"Section", "---------"} or re.match(r"^:?-+:?$", cols[1]):
+              if cols[1] in {"Section"} or re.match(r"^:?-+:?$", cols[1]):
                   continue
               status = cols[5]
               if status not in allowed:
