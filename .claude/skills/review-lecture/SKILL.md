@@ -86,7 +86,7 @@ For every animation referenced in the script, the `animations/` folder must cont
 
 For each `animations/*.py`:
 
-- [ ] Imports at least one name from `anyone_can_code_assets`
+- [ ] Imports at least one name from `anyone_can_code_assets`, OR the file's module docstring starts with `lib-free:` followed by a reason (for legitimate one-off visualizations that no library asset would cleanly express, e.g., a bespoke chart)
 - [ ] If the `.py` defines new Manim geometry beyond what library assets provide, that geometry is minimal composition (placement, highlights) — not a re-invention of an existing asset
 - [ ] Class name is PascalCase and matches the filename stem (case-normalized)
 

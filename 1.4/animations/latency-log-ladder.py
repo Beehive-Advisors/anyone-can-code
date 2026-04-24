@@ -1,6 +1,12 @@
-"""latency-log-ladder — log-scale bars with human-scale analogies (1s to 4 months)."""
+"""latency-log-ladder — log-scale bars with human-scale analogies (1s to 4 months).
+
+lib-free: this is a one-off log-scale chart with custom human-scale analogy labels.
+No reusable asset in anyone_can_code_assets fits, and the research phase
+intentionally kept it inline rather than adding a narrow-purpose LogLatencyChart
+class to the library (see 1.4/proposed_new_assets.md audit trail in commit history).
+"""
 from manim import (
-    DOWN, LEFT, RIGHT, UP, Create, FadeIn, LEFT, Rectangle, Scene, Text, VGroup,
+    DOWN, LEFT, RIGHT, UP, Create, FadeIn, Rectangle, Scene, Text, VGroup,
 )
 
 
