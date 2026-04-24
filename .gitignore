@@ -2,3 +2,4 @@
 __pycache__/
 *.pyc
 .DS_Store
+1.4/animations/*.mp4

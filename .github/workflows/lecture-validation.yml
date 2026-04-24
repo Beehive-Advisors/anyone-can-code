@@ -1,0 +1,122 @@
+name: Lecture & Lab Validation
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "**/animations/**"
+      - ".github/workflows/lecture-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.md"
+      - "**/animations/**"
+
+jobs:
+  structure:
+    name: Structural checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify every lecture script embed has a matching GIF
+        run: |
+          set -e
+          failed=0
+          for lect in $(find . -maxdepth 2 -name '*-lecture.md' 2>/dev/null); do
+            dir=$(dirname "$lect")
+            echo "Checking $lect..."
+            # No leftover ANIMATE placeholders
+            if grep -q '<!-- ANIMATE' "$lect"; then
+              echo "  FAIL: leftover <!-- ANIMATE --> placeholder in $lect"
+              failed=1
+            fi
+            # Every ![name](./animations/name.gif) has a file
+            while IFS= read -r gif_path; do
+              full="$dir/$gif_path"
+              if [ ! -f "$full" ]; then
+                echo "  FAIL: referenced GIF not found: $full"
+                failed=1
+              fi
+            done < <(grep -oE '\./animations/[a-z0-9-]+\.gif' "$lect" | sort -u)
+          done
+          if [ $failed -eq 1 ]; then exit 1; fi
+          echo "OK"
+
+      - name: Every animation .py compiles (Python syntax)
+        run: |
+          set -e
+          failed=0
+          for py in $(find . -path '*/animations/*.py' 2>/dev/null); do
+            python3 -m py_compile "$py" || { echo "FAIL: $py"; failed=1; }
+          done
+          if [ $failed -eq 1 ]; then exit 1; fi
+          echo "OK"
+
+      - name: Every animation .py has a matching .gif sibling
+        run: |
+          set -e
+          failed=0
+          for py in $(find . -path '*/animations/*.py' 2>/dev/null); do
+            gif="${py%.py}.gif"
+            if [ ! -f "$gif" ]; then
+              echo "FAIL: $py has no matching $gif"
+              failed=1
+            fi
+          done
+          if [ $failed -eq 1 ]; then exit 1; fi
+          echo "OK"
+
+      - name: SYLLABUS.md Status column valid
+        run: |
+          python3 - <<'PYEOF'
+          import re, sys
+          text = open("SYLLABUS.md").read()
+          allowed = {"", "Draft", "Approved"}
+          # Split on unescaped pipes only ('|' but not '\|')
+          def split_row(s: str) -> list[str]:
+              parts = re.split(r"(?<!\\)\|", s)
+              return [p.strip().replace("\\|", "|") for p in parts]
+          bad = []
+          for i, line in enumerate(text.splitlines(), 1):
+              if "|" not in line:
+                  continue
+              cols = split_row(line)
+              # Expect a trailing empty cell after the last pipe; skip malformed rows
+              if len(cols) < 7 or cols[0] != "" or cols[-1] != "":
+                  continue
+              if cols[1] in {"Section"} or re.match(r"^:?-+:?$", cols[1]):
+                  continue
+              status = cols[5]
+              if status not in allowed:
+                  bad.append((i, line, status))
+          if bad:
+              for i, line, s in bad:
+                  print(f"FAIL line {i}: unexpected Status {s!r}: {line}")
+              sys.exit(1)
+          print("OK")
+          PYEOF
+
+      - name: LECTURE_COVERAGE / LAB_COVERAGE format
+        run: |
+          python3 - <<'PYEOF'
+          import pathlib, re, sys
+          for fname in ("LECTURE_COVERAGE.md", "LAB_COVERAGE.md"):
+              p = pathlib.Path(fname)
+              if not p.exists():
+                  continue
+              text = p.read_text()
+              expected = "Lab" if "LAB" in fname else "Lecture"
+              # Only H2 headers at line start count as sections.
+              headers = re.findall(r"^## (.+)$", text, flags=re.MULTILINE)
+              bad = [h for h in headers if not h.startswith(expected)]
+              if bad:
+                  print(f"FAIL: unexpected H2 section(s) in {fname}: {bad}")
+                  sys.exit(1)
+              print(f"OK {fname} ({len(headers)} sections)")
+          PYEOF
