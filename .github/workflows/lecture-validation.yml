@@ -1,0 +1,115 @@
+name: Lecture & Lab Validation
+
+on:
+  pull_request:
+    paths:
+      - "**/*.md"
+      - "**/animations/**"
+      - ".github/workflows/lecture-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.md"
+      - "**/animations/**"
+
+jobs:
+  structure:
+    name: Structural checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify every lecture script embed has a matching GIF
+        run: |
+          set -e
+          failed=0
+          for lect in $(find . -maxdepth 2 -name '*-lecture.md' 2>/dev/null); do
+            dir=$(dirname "$lect")
+            echo "Checking $lect..."
+            # No leftover ANIMATE placeholders
+            if grep -q '<!-- ANIMATE' "$lect"; then
+              echo "  FAIL: leftover <!-- ANIMATE --> placeholder in $lect"
+              failed=1
+            fi
+            # Every ![name](./animations/name.gif) has a file
+            while IFS= read -r gif_path; do
+              full="$dir/$gif_path"
+              if [ ! -f "$full" ]; then
+                echo "  FAIL: referenced GIF not found: $full"
+                failed=1
+              fi
+            done < <(grep -oE '\./animations/[a-z0-9-]+\.gif' "$lect" | sort -u)
+          done
+          if [ $failed -eq 1 ]; then exit 1; fi
+          echo "OK"
+
+      - name: Every animation .py compiles (Python syntax)
+        run: |
+          set -e
+          failed=0
+          for py in $(find . -path '*/animations/*.py' 2>/dev/null); do
+            python3 -m py_compile "$py" || { echo "FAIL: $py"; failed=1; }
+          done
+          if [ $failed -eq 1 ]; then exit 1; fi
+          echo "OK"
+
+      - name: Every animation .py has a matching .gif sibling
+        run: |
+          set -e
+          failed=0
+          for py in $(find . -path '*/animations/*.py' 2>/dev/null); do
+            gif="${py%.py}.gif"
+            if [ ! -f "$gif" ]; then
+              echo "FAIL: $py has no matching $gif"
+              failed=1
+            fi
+          done
+          if [ $failed -eq 1 ]; then exit 1; fi
+          echo "OK"
+
+      - name: SYLLABUS.md Status column valid
+        run: |
+          python3 - <<'PYEOF'
+          import re, sys
+          text = open("SYLLABUS.md").read()
+          allowed = {"", "Draft", "Approved"}
+          bad = []
+          for i, line in enumerate(text.splitlines(), 1):
+              if "|" not in line:
+                  continue
+              cols = [c.strip() for c in line.split("|")]
+              if len(cols) < 6:
+                  continue
+              if cols[1] in {"Section", "---------"} or re.match(r"^:?-+:?$", cols[1]):
+                  continue
+              status = cols[5]
+              if status not in allowed:
+                  bad.append((i, line, status))
+          if bad:
+              for i, line, s in bad:
+                  print(f"FAIL line {i}: unexpected Status {s!r}: {line}")
+              sys.exit(1)
+          print("OK")
+          PYEOF
+
+      - name: LECTURE_COVERAGE / LAB_COVERAGE format
+        run: |
+          for f in LECTURE_COVERAGE.md LAB_COVERAGE.md; do
+            if [ -f "$f" ]; then
+              python3 -c "
+          t = open('$f').read()
+          for section in t.split('## ')[1:]:
+              header = section.splitlines()[0]
+              if 'Lab' in '$f' and not header.startswith('Lab'):
+                  raise SystemExit(f'FAIL: unexpected section in $f: {header}')
+              if 'LECTURE' in '$f' and not header.startswith('Lecture'):
+                  raise SystemExit(f'FAIL: unexpected section in $f: {header}')
+          print('OK $f')
+          "
+            fi
+          done
