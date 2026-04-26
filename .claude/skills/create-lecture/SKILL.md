@@ -396,26 +396,28 @@ Move the mp4 next to the GIF:
 mv [manim-output-mp4] LECTURE_DIR/animations/[name].mp4
 ```
 
-### 6e. Open and present to the user
+### 6e. Present to the user (text only — do NOT open windows)
 
-```bash
-open LECTURE_DIR/animations/[name].mp4
-```
+**Do not run `open <path>`.** Auto-opening videos burns memory and CPU on the user's machine and forces them to close N QuickTime windows by hand. Print a clickable `file://` URL instead — most terminals (iTerm2, VS Code, Warp, Ghostty) make these clickable, and the user can choose whether to view.
 
-Then print in the terminal:
+Print in the terminal:
 
 ```
 ────────────────────────────────────────────────────────────────
 Animation [K]/[TOTAL] · [name]
   prompt: [prompt text]
   assets: [assets list]
-  files:  LECTURE_DIR/animations/[name].{mp4,gif,py}
+  preview (gif): file://LECTURE_DIR/animations/[name].gif
+  draft mp4:    file://LECTURE_DIR/animations/[name].mp4
+  source:       LECTURE_DIR/animations/[name].py
 
 (a)pprove  (r)egenerate with feedback  (s)kip  (e)dit .py directly  (q)uit
 
 Waiting for your reply...
 ────────────────────────────────────────────────────────────────
 ```
+
+The GIF is usually enough to judge the animation. If the user wants higher fidelity they cmd+click the file URL themselves.
 
 ### 6f. Act on the reply
 
@@ -433,26 +435,63 @@ Waiting for your reply...
 
 - **`q` / "quit"**: stop Phase 6 entirely. Report what was approved vs skipped and let the user decide whether to commit partial progress.
 
-### 6g. Upload approved mp4s to the pod
+### 6g. Re-render approved animations at HD, then upload
 
-After ALL animations are approved / skipped, upload the approved mp4s:
+The feedback loop renders at `-ql` (480p15) for fast iteration. The mp4s served from the pod must be **higher quality** than the GIF previews — otherwise clicking through gives you the same blurry frame at the same fps. Two extra steps before upload:
+
+**Step 1 — Re-render approved scenes at `-qh` (1080p60):**
 
 ```bash
-# Confirm pod is reachable
-kubectl get deploy course-videos -n course-videos 2>/dev/null | tail -1
-
-# If the deployment exists and is ready:
-POD=$(kubectl get pod -n course-videos -l app=course-videos -o jsonpath='{.items[0].metadata.name}')
-kubectl exec -n course-videos $POD -- mkdir -p /srv/$0
-for mp4 in LECTURE_DIR/animations/*.mp4; do
-  kubectl cp "$mp4" course-videos/$POD:/srv/$0/$(basename "$mp4")
+cd LECTURE_DIR/animations && source ~/src/projects/manim-library/.venv/bin/activate
+mkdir -p _hq
+for name in [each approved animation]; do
+  manim render -qh --media_dir _hq/media "${name}.py" "${PascalCase[$name]}" 2>&1 | tail -1
 done
-
-# Verify
-curl -sI $VIDEO_BASE_URL/$0/ | head -1
+# Collect the final HD mp4s alongside the .py files (next to the .ql versions, which we'll overwrite)
+for d in _hq/media/videos/*/1080p60/; do
+  src=$(ls "$d"*.mp4 2>/dev/null | grep -v partial | head -1)
+  base=$(basename $(dirname "$d"))
+  [ -n "$src" ] && cp "$src" "_hq/${base}.mp4"
+done
 ```
 
-If the pod is not yet deployed (beehive-dev PR pending), skip this step and record `UPLOAD_DEFERRED=true`. The lecture markdown will have relative `./animations/*.mp4` links that resolve when the mp4s are uploaded later. Print a reminder at the end of Phase 8.
+**Step 2 — `ffmpeg`-post-process for browser playback:**
+
+The default manim mp4 has the `moov` atom at the END of the file (which forces browsers to download the whole file before playback can start) and runs at 60fps (more than necessary for whiteboard-style animation, doubles the file size for no perceptible benefit). Re-mux with `+faststart` and drop to 30fps:
+
+```bash
+mkdir -p _final
+for hq in _hq/*.mp4; do
+  name=$(basename "$hq")
+  ffmpeg -y -i "$hq" -c:v libx264 -preset fast -crf 23 -r 30 -pix_fmt yuv420p \
+    -movflags +faststart -an "_final/$name" 2>&1 | tail -1
+done
+```
+
+`+faststart` puts the moov atom at byte 32 — the browser starts playing as soon as the first KB arrives. `-r 30` halves the framerate (educational animations don't need 60). `-pix_fmt yuv420p` ensures every browser can decode (manim's default `yuv444p` doesn't play in Safari/Chrome on some configurations).
+
+**Step 3 — Upload the `_final/` mp4s to the pod:**
+
+```bash
+kubectl get deploy course-videos -n course-videos 2>/dev/null | tail -1
+POD=$(kubectl get pod -n course-videos -l app=course-videos -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -n course-videos $POD -- mkdir -p /srv/$0
+for mp4 in _final/*.mp4; do
+  kubectl cp "$mp4" "course-videos/$POD:/srv/$0/$(basename "$mp4")"
+done
+# Verify one URL serves and starts playback fast (moov at start)
+curl -sI $VIDEO_BASE_URL/$0/[first-name].mp4 | head -1
+```
+
+**Step 4 — Cleanup the working dirs (do NOT commit them):**
+
+```bash
+rm -rf _hq _final
+```
+
+Only the **`-ql` draft mp4 + the GIF + the `.py` source** stay in `LECTURE_DIR/animations/` (the `.mp4` is gitignored anyway; the `.gif` and `.py` get committed). The HD versions live only on the pod.
+
+If the pod is not yet deployed, skip Steps 3 and record `UPLOAD_DEFERRED=true`. The lecture markdown still has the correct `$VIDEO_BASE_URL/$0/[name].mp4` links; they'll resolve once the pod is reachable and the upload step is run manually later.
 
 ---
 
